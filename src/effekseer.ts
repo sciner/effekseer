@@ -1,4 +1,11 @@
-let Module = {} as any;
+import type { TModule } from "./module.js";
+
+const window: any = {}
+let upvecVector: any
+var loadingEffect: EffekseerEffect = null
+let Module: TModule
+function effekseer(): Promise<any> | any {}
+
 let Core = {} as any;
 let _imageCrossOrigin = "";
 let _onloadAssembly = () => { }
@@ -73,7 +80,15 @@ Module._loadImage = path => {
     }
   }
 
-  const res = { path: path, isLoaded: false, image: null, isRequired: true };
+// const res = { path: path, isLoaded: false, image: null, isRequired: true };
+  const res: { path: string, isLoaded: boolean, image: Image | null, isRequired: boolean } = {
+    path: path,
+    isLoaded: false,
+    image: null,
+    isRequired: true
+  };
+
+  
   effect.resources.push(res);
 
   var path = effect.baseDir + path;
@@ -99,7 +114,7 @@ Module._loadImage = path => {
         img.src = url;
       });
     } else {
-      _loadResource(path, image => {
+      _loadResource(path, (image: Image) => {
         res.image = image
         res.isLoaded = true;
         effect._update();
@@ -118,7 +133,7 @@ Module._loadBinary = (path, isRequired) => {
     return (res.isLoaded) ? res.buffer : null;
   }
 
-  var res = { path: path, isLoaded: false, buffer: null, isRequired: isRequired };
+  var res: any = { path: path, isLoaded: false, buffer: null, isRequired: isRequired };
   effect.resources.push(res);
 
   var path = effect.baseDir + path;
@@ -132,7 +147,7 @@ Module._loadBinary = (path, isRequired) => {
       res.isLoaded = true;
       effect._update();
   } else {
-    _loadResource(path, buffer => {
+    _loadResource(path, (buffer: ArrayBuffer) => {
       res.buffer = buffer;
       res.isLoaded = true;
       effect._update();
@@ -145,7 +160,7 @@ _is_runtime_initialized = true;
 _onloadAssembly();
 };
 
-const _initalize_wasm = (url) => {
+const _initalize_wasm = (url: string) => {
 const xhr = new XMLHttpRequest();
 xhr.open('GET', url, true);
 xhr.responseType = "arraybuffer";
@@ -153,7 +168,7 @@ xhr.onload = () => {
   var params = {} as any;
   params.wasmBinary = xhr.response;
   // params.onRuntimeInitialized = _onRuntimeInitialized;
-  effekseer_native(params).then(function (module) {
+  effekseer_native(params).then(function (module: TModule) {
     Module = module;
     _onRuntimeInitialized();
   });
@@ -191,12 +206,16 @@ class EffekseerEffect {
     scale = 1.0
     resources: any[] = []
     main_buffer: any = null
+    // added
+    onload: any
+    redirect: any
+    onerror: any
 
-    constructor(context) {
+    constructor(context: any) {
         this.context = context;
     }
 
-_load(buffer) {
+_load(buffer: ArrayBuffer) {
   loadingEffect = this;
   this.main_buffer = buffer;
   const memptr = Module._malloc(buffer.byteLength);
@@ -212,7 +231,7 @@ _load(buffer) {
  * @param {ArrayBuffer} buffer a ArrayBuffer of the .efkpkg file
  * @param {Object} Unzip a Unzip object
  */
-async _loadFromPackage(buffer, Unzip) {
+async _loadFromPackage(buffer: ArrayBuffer, Unzip: IUnzip) {
   const unzip = new Unzip(new Uint8Array(buffer))
   const meta_buffer = unzip.decompress('metafile.json')
   const textDecoder = new TextDecoder();
@@ -220,7 +239,7 @@ async _loadFromPackage(buffer, Unzip) {
   const json = JSON.parse(text);
 
   let efkFile;
-  const dependencies = [];
+  const dependencies: any[] = [];
   for (let key in json.files) {
     const val = json.files[key];
     if (val.type === 'Effect') {
@@ -278,23 +297,23 @@ _update() {
 * @class
 */
 class EffekseerHandle {
-constructor(context, native) {
-  this.context = context;
-  this.native = native;
+constructor(context: any, native: any) {
+    (this as any).context = context;
+  (this as any).native = native;
 }
 
 /**
  * Stop this effect instance.
  */
 stop() {
-  Core.StopEffect(this.context.nativeptr, this.native);
+  Core.StopEffect((this as any).context.nativeptr, (this as any).native);
 }
 
 /**
  * Stop the root node of this effect instance.
  */
 stopRoot() {
-  Core.StopRoot(this.context.nativeptr, this.native);
+  Core.StopRoot((this as any).context.nativeptr, (this as any).native);
 }
 
 /**
@@ -302,15 +321,15 @@ stopRoot() {
  * @property {boolean}
  */
 get exists() {
-  return !!Core.Exists(this.context.nativeptr, this.native);
+  return !!Core.Exists((this as any).context.nativeptr, (this as any).native);
 }
 
 /**
  * Set frame of this effect instance.
  * @param {number} frame Frame of this effect instance.
  */
-setFrame(frame) {
-  Core.SetFrame(this.context.nativeptr, this.native, frame);
+setFrame(frame: number) {
+  Core.SetFrame((this as any).context.nativeptr, (this as any).native, frame);
 }
 
 /**
@@ -319,8 +338,8 @@ setFrame(frame) {
  * @param {number} y Y value of location
  * @param {number} z Z value of location
  */
-setLocation(x, y, z) {
-  Core.SetLocation(this.context.nativeptr, this.native, x, y, z);
+setLocation(x: number, y: number, z: number) {
+  Core.SetLocation((this as any).context.nativeptr, (this as any).native, x, y, z);
 }
 
 /**
@@ -329,8 +348,8 @@ setLocation(x, y, z) {
  * @param {number} y Y value of euler angle
  * @param {number} z Z value of euler angle
  */
-setRotation(x, y, z) {
-  Core.SetRotation(this.context.nativeptr, this.native, x, y, z);
+setRotation(x: number, y: number, z: number) {
+  Core.SetRotation((this as any).context.nativeptr, (this as any).native, x, y, z);
 }
 
 /**
@@ -339,19 +358,19 @@ setRotation(x, y, z) {
  * @param {number} y Y value of scale factor
  * @param {number} z Z value of scale factor
  */
-setScale(x, y, z) {
-  Core.SetScale(this.context.nativeptr, this.native, x, y, z);
+setScale(x: number, y: number, z: number) {
+  Core.SetScale((this as any).context.nativeptr, (this as any).native, x, y, z);
 }
 
 /**
  * Set the model matrix of this effect instance.
  * @param {array} matrixArray An array that is requred 16 elements
  */
-setMatrix(matrixArray) {
+setMatrix(matrixArray: IMatrixArray) {
   const stack = Module.stackSave();
   const arrmem = Module.stackAlloc(4 * 16);
   Module.HEAPF32.set(matrixArray, arrmem >> 2);
-  Core.SetMatrix(this.context.nativeptr, this.native, arrmem);
+  Core.SetMatrix((this as any).context.nativeptr, (this as any).native, arrmem);
   Module.stackRestore(stack);
 }
 
@@ -362,8 +381,8 @@ setMatrix(matrixArray) {
  * @param {number} b B channel value of color
  * @param {number} a A channel value of color
  */
-setAllColor(r, g, b, a) {
-  Core.SetAllColor(this.context.nativeptr, this.native, r, g, b, a);
+setAllColor(r: number, g: number, b: number, a: number) {
+  Core.SetAllColor((this as any).context.nativeptr, (this as any).native, r, g, b, a);
 }
 
 /**
@@ -372,8 +391,8 @@ setAllColor(r, g, b, a) {
  * @param {number} y Y value of target location
  * @param {number} z Z value of target location
  */
-setTargetLocation(x, y, z) {
-  Core.SetTargetLocation(this.context.nativeptr, this.native, x, y, z);
+setTargetLocation(x: number, y: number, z: number) {
+  Core.SetTargetLocation((this as any).context.nativeptr, (this as any).native, x, y, z);
 }
 
 /**
@@ -381,8 +400,8 @@ setTargetLocation(x, y, z) {
  * @param {number} index slot index
  * @returns {number} value
  */
-getDynamicInput(index) {
-  return Core.GetDynamicInput(this.context.nativeptr, this.native, index);
+getDynamicInput(index: int) {
+  return Core.GetDynamicInput((this as any).context.nativeptr, (this as any).native, index);
 }
 
 /**
@@ -390,16 +409,16 @@ getDynamicInput(index) {
  * @param {number} index slot index
  * @param {number} value value
  */
-setDynamicInput(index, value) {
-  Core.SetDynamicInput(this.context.nativeptr, this.native, index, value);
+setDynamicInput(index: int, value: number) {
+  Core.SetDynamicInput((this as any).context.nativeptr, (this as any).native, index, value);
 }
 
 /**
  * Sends the specified trigger to the currently playing effect
  * @param {number} index trigger index
  */
-sendTrigger(index) {
-  Core.SendTrigger(this.context.nativeptr, this.native, index);
+sendTrigger(index: int) {
+  Core.SendTrigger((this as any).context.nativeptr, (this as any).native, index);
 }
 
 /**
@@ -407,8 +426,8 @@ sendTrigger(index) {
  * if specified true, this effect playing will not advance.
  * @param {boolean} paused Paused flag
  */
-setPaused(paused) {
-  Core.SetPaused(this.context.nativeptr, this.native, paused);
+setPaused(paused: boolean) {
+  Core.SetPaused((this as any).context.nativeptr, (this as any).native, paused);
 }
 
 /**
@@ -416,32 +435,32 @@ setPaused(paused) {
  * if specified false, this effect will be invisible.
  * @param {boolean} shown Shown flag
  */
-setShown(shown) {
-  Core.SetShown(this.context.nativeptr, this.native, shown);
+setShown(shown: boolean) {
+  Core.SetShown((this as any).context.nativeptr, (this as any).native, shown);
 }
 
 /**
  * Set playing speed of this effect.
  * @param {number} speed Speed ratio
  */
-setSpeed(speed) {
-  Core.SetSpeed(this.context.nativeptr, this.native, speed);
+setSpeed(speed: float) {
+  Core.SetSpeed((this as any).context.nativeptr, (this as any).native, speed);
 }
 
 /**
  * Set random seed of this effect.
  * @param {number} seed Random seed
  */
-setRandomSeed(seed) {
-  Core.SetRandomSeed(this.context.nativeptr, this.native, seed);
+setRandomSeed(seed: float) {
+  Core.SetRandomSeed((this as any).context.nativeptr, (this as any).native, seed);
 }
 }
 
-let _isImagePowerOfTwo = (image) => {
+let _isImagePowerOfTwo = (image: Image) => {
 return !(image.width & (image.width - 1)) && !(image.height & (image.height - 1));
 };
 
-let calcNextPowerOfTwo = (v) => {
+let calcNextPowerOfTwo = (v: number) => {
 var sizes = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048];
 
 var foundInd = -1;
@@ -459,7 +478,7 @@ for (var i = sizes.length - 1; i >= 0; i--) {
 return 1;
 }
 
-let _convertPowerOfTwoImage = (image) => {
+let _convertPowerOfTwoImage = (image: Image) => {
 if (!_isImagePowerOfTwo(image)) {
   var canvas = document.createElement("canvas");
   canvas.width = calcNextPowerOfTwo(image.width);
@@ -472,7 +491,7 @@ if (!_isImagePowerOfTwo(image)) {
 return image;
 };
 
-const _loadBinFile = (url, onload, onerror) => {
+const _loadBinFile = (url: string, onload: any, onerror: any) => {
 const xhr = new XMLHttpRequest();
 xhr.open('GET', url, true);
 xhr.responseType = "arraybuffer";
@@ -485,9 +504,9 @@ xhr.onerror = () => {
 xhr.send(null);
 };
 
-let _loadResource = (path, onload, onerror) => {
+let _loadResource = (path: string, onload: any, onerror: any) => {
 
-splitted_path = path.split('?');
+const splitted_path = path.split('?');
 var ext_path = path;
 if (splitted_path.length >= 2) {
   ext_path = splitted_path[0];
@@ -511,16 +530,27 @@ if (ext == ".png" || ext == ".jpg") {
   if (!(typeof onerror === "undefined")) onerror('not supported', path);
 }
 else {
-  _loadBinFile(path, buffer => {
+  _loadBinFile(path, (buffer: ArrayBuffer) => {
     onload(buffer);
   }, onerror);
 }
 };
 
-var loadingEffect = null;
+var loadingEffect: EffekseerEffect = null;
 
 class ContextStates {
-constructor(gl) {
+restore_texture_slot_max: number;
+_gl: any;
+ext_vao: any
+isWebGL2VAOEnabled: boolean;
+effekseer_vao: any
+current_vao: any
+current_vbo: any
+current_ibo: any
+current_textures: any[];
+current_active_texture_id: any
+
+constructor(gl: any) {
   this.restore_texture_slot_max = 8;
   this._gl = gl;
   this.ext_vao = null;
@@ -536,6 +566,7 @@ constructor(gl) {
   this.ext_vao = this._gl.getExtension('OES_vertex_array_object');
   let vao = null;
   if (this.ext_vao != null) {
+    // @ts-ignore
     vao = this.ext_vao.createVertexArrayOES();
   }
   else if ('createVertexArray' in this._gl) {
@@ -619,8 +650,15 @@ disableVAO() {
 class EffekseerContext {
     nativeptr: number
     contextStates: ContextStates
-    _gl: WebGL2RenderingContext
+    _gl: any // WebGL2RenderingContext | WebGLRenderingContext
     ctx: any;
+    _availableList: any[];
+    _usingList: any[];
+    _drawCount: number;
+    _accumulatedDrawTime: number;
+    _onTimerQueryReport: any;
+    _timerQueryReportIntervalCount: any;
+    _restorationOfStatesFlag: boolean;
 
     _makeContextCurrent() {
         Module.GL.makeContextCurrent(this.ctx);
@@ -631,7 +669,7 @@ class EffekseerContext {
      * @param {WebGLRenderingContext} webglContext WebGL Context
      * @param {object} settings Some settings with Effekseer initialization
      */
-    init(webglContext, settings) {
+    init(webglContext: WebGLRenderingContext, settings: any) {
       this._gl = webglContext;
       this.contextStates = new ContextStates(this._gl);
 
@@ -692,7 +730,7 @@ class EffekseerContext {
  * Advance frames.
  * @param {number=} deltaFrames number of advance frames
  */
-update(deltaFrames) {
+update(deltaFrames: number) {
   if (!deltaFrames) deltaFrames = 1.0;
   // Update frame
   Core.Update(this.nativeptr, deltaFrames);
@@ -706,7 +744,7 @@ endUpdate() {
   Core.EndUpdate(this.nativeptr);
 }
 
-updateHandle(handle, deltaFrames) {
+updateHandle(handle: any, deltaFrames: number) {
   Core.UpdateHandle(this.nativeptr, handle.native, deltaFrames);
 }
 
@@ -753,7 +791,7 @@ _startQuery() {
   }
 }
 
-_endQuery(availableQuery) {
+_endQuery(availableQuery: any) {
   if (window.ext_timer != null) {
     // End draw time query
     this._gl.endQuery(window.ext_timer.TIME_ELAPSED_EXT);
@@ -806,7 +844,7 @@ endDraw() {
   }
 }
 
-drawHandle(handle) {
+drawHandle(handle: IHandle) {
   Core.DrawHandle(this.nativeptr, handle.native);
 }
 
@@ -814,7 +852,7 @@ drawHandle(handle) {
  * Set camera projection from matrix.
  * @param {array} matrixArray An array that is requred 16 elements
  */
-setProjectionMatrix(matrixArray) {
+setProjectionMatrix(matrixArray: IMatrixArray) {
   const stack = Module.stackSave();
   const arrmem = Module.stackAlloc(4 * 16);
   Module.HEAPF32.set(matrixArray, arrmem >> 2);
@@ -829,7 +867,7 @@ setProjectionMatrix(matrixArray) {
  * @param {number} near Distance of near plane
  * @param {number} aspect Distance of far plane
  */
-setProjectionPerspective(fov, aspect, near, far) {
+setProjectionPerspective(fov: number, aspect: number, near: number, far: number) {
   Core.SetProjectionPerspective(this.nativeptr, fov, aspect, near, far);
 }
 
@@ -840,7 +878,7 @@ setProjectionPerspective(fov, aspect, near, far) {
  * @param {number} near Distance of near plane
  * @param {number} aspect Distance of far plane
  */
-setProjectionOrthographic(width, height, near, far) {
+setProjectionOrthographic(width: number, height: number, near: number, far: number) {
   Core.SetProjectionOrthographic(this.nativeptr, width, height, near, far);
 }
 
@@ -848,7 +886,7 @@ setProjectionOrthographic(width, height, near, far) {
  * Set camera view from matrix.
  * @param {array} matrixArray An array that is requred 16 elements
  */
-setCameraMatrix(matrixArray) {
+setCameraMatrix(matrixArray: IMatrixArray) {
   const stack = Module.stackSave();
   const arrmem = Module.stackAlloc(4 * 16);
   Module.HEAPF32.set(matrixArray, arrmem >> 2);
@@ -869,15 +907,15 @@ setCameraMatrix(matrixArray) {
  * @param {number} upvecZ Z value of upper vector
  */
 setCameraLookAt(
-  positionX,
-  positionY,
-  positionZ,
-  targetX,
-  targetY,
-  targetZ,
-  upvecX,
-  upvecY,
-  upvecZ
+  positionX: number,
+  positionY: number,
+  positionZ: number,
+  targetX: number,
+  targetY: number,
+  targetZ: number,
+  upvecX: number,
+  upvecY: number,
+  upvecZ: number
 ) {
   Core.SetCameraLookAt(this.nativeptr, positionX, positionY, positionZ, targetX, targetY, targetZ, upvecX, upvecY, upvecZ);
 }
@@ -888,7 +926,7 @@ setCameraLookAt(
  * @param {object} target target position
  * @param {object=} upvec upper vector
  */
-setCameraLookAtFromVector(position, target, upvec) {
+setCameraLookAtFromVector(position: IVec3, target: IVec3, upvec: IVec3) {
   upvecVector = (typeof upvecVector === "object") ? upvecVector : { x: 0, y: 1, z: 0 };
   Core.SetCameraLookAt(this.nativeptr, position.x, position.y, position.z, target.x, target.y, target.z, upvec.x, upvec.y, upvec.z);
 }
@@ -902,7 +940,7 @@ setCameraLookAtFromVector(position, target, upvec) {
  * @param {function=} redirect A function to redirect a path. First argument is an url and return redirected url.
  * @returns {EffekseerEffect} The effect data
  */
-loadEffect(data, scale = 1.0, onload, onerror, redirect) {
+loadEffect(data: string|ArrayBuffer, scale = 1.0, onload: any, onerror: any, redirect: any) {
   this._makeContextCurrent();
 
   const effect = new EffekseerEffect(this);
@@ -924,7 +962,7 @@ loadEffect(data, scale = 1.0, onload, onerror, redirect) {
   if (typeof data === "string") {
     const dirIndex = data.lastIndexOf("/");
     effect.baseDir = (dirIndex >= 0) ? data.slice(0, dirIndex + 1) : "";
-    _loadBinFile(data, buffer => {
+    _loadBinFile(data, (buffer: ArrayBuffer) => {
       effect._load(buffer);
     }, effect.onerror);
   } else if (data instanceof ArrayBuffer) {
@@ -944,7 +982,7 @@ loadEffect(data, scale = 1.0, onload, onerror, redirect) {
  * @param {function=} onerror A function that is called at loading error. First argument is a message. Second argument is an url.
  * @returns {EffekseerEffect} The effect data
  */
-loadEffectPackage(data, Unzip, scale = 1.0, onload, onerror) {
+loadEffectPackage(data: string|ArrayBuffer, Unzip: IUnzip, scale = 1.0, onload: any, onerror: any) {
   if (Unzip == null)
   this._makeContextCurrent();
 
@@ -956,7 +994,7 @@ loadEffectPackage(data, Unzip, scale = 1.0, onload, onerror) {
   if (typeof data === "string") {
     const dirIndex = data.lastIndexOf("/");
     effect.baseDir = (dirIndex >= 0) ? data.slice(0, dirIndex + 1) : "";
-    _loadBinFile(data, buffer => {
+    _loadBinFile(data, (buffer: ArrayBuffer) => {
       effect._loadFromPackage(buffer, Unzip);
     }, effect.onerror);
   } else if (data instanceof ArrayBuffer) {
@@ -971,7 +1009,7 @@ loadEffectPackage(data, Unzip, scale = 1.0, onload, onerror) {
  * Release the specified effect. Don't touch the instance of effect after released.
  * @param {EffekseerEffect} effect The loaded effect
  */
-releaseEffect(effect) {
+releaseEffect(effect: EffekseerEffect) {
   this._makeContextCurrent();
 
   if (effect == null) {
@@ -1001,7 +1039,7 @@ releaseEffect(effect) {
  * @param {number} z Z value of location that is emited
  * @returns {EffekseerHandle} The effect handle
  */
-play(effect, x, y, z) {
+play(effect: EffekseerEffect, x: float, y: float, z: float) {
   if (!effect || !effect.isLoaded) {
     return null;
   }
@@ -1023,7 +1061,7 @@ stopAll() {
  * Set the resource loader function.
  * @param {function} loader
  */
-setResourceLoader(loader) {
+setResourceLoader(loader: any) {
   _loadResource = loader;
 }
 
@@ -1062,7 +1100,7 @@ isVertexArrayObjectSupported() {
  * it must be called after init
  * @param {boolean} flag
  */
-setRestorationOfStatesFlag(flag) {
+setRestorationOfStatesFlag(flag: boolean) {
   this._restorationOfStatesFlag = flag;
   Core.SetRestorationOfStatesFlag(this.nativeptr, flag);
 }
@@ -1074,7 +1112,7 @@ setRestorationOfStatesFlag(flag) {
  * @param {number} width captured image's width
  * @param {number} height captured image's height
  */
-captureBackground(x, y, width, height) {
+captureBackground(x: float, y: float, width: float, height: float) {
   return Core.CaptureBackground(this.nativeptr, x, y, width, height);
 }
 
@@ -1093,7 +1131,7 @@ resetBackground() {
 * @param {function=} onload A function that is called at loading complete
 * @param {function=} onerror A function that is called at loading error.
 */
-export function initRuntime(path, onload, onerror) {
+export function initRuntime(path: string, onload: any, onerror: any) {
   if (typeof effekseer_native === "undefined") {
     onload();
     return;
@@ -1120,7 +1158,7 @@ export function createContext() {
 * Release specified context. After that, don't touch a context
 * @param {EffekseerContext} context context
 */
-export function releaseContext(context) {
+export function releaseContext(context: EffekseerContext) {
   if (context.contextStates) {
     context.contextStates.release();
   }
@@ -1140,7 +1178,7 @@ export function releaseContext(context) {
  * Set the flag whether Effekseer show logs
  * @param {boolean} flag
  */
-export function setLogEnabled(flag) {
+export function setLogEnabled(flag: boolean) {
   Core.SetLogEnabled(flag);
 }
 
@@ -1148,6 +1186,6 @@ export function setLogEnabled(flag) {
  * Set the string of cross origin for images
  * @param {string} crossOrigin
  */
-export function setImageCrossOrigin(crossOrigin) {
+export function setImageCrossOrigin(crossOrigin: string) {
   _imageCrossOrigin = crossOrigin;
 }
