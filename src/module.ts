@@ -13,10 +13,12 @@ export class TModule {
 
     resourcesMap: {[key: string]: any} = {}
 
-    _free(_memptr: int): void {
+    // @ts-ignore
+    _free(memptr: int): void {
     }
 
-    cwrap(_arg0: string, _arg1: string, _arg2: string[]) {
+    // @ts-ignore
+    cwrap(arg0: string, arg1: string, arg2: string[]) {
         throw new Error("Method not implemented.")
     }
 
@@ -24,11 +26,13 @@ export class TModule {
         throw new Error("Method not implemented.")
     }
 
-    stackAlloc(_arg0: number): number {
+    // @ts-ignore
+    stackAlloc(arg0: number): number {
         throw new Error("Method not implemented.")
     }
 
-    stackRestore(_stack: any) {
+    // @ts-ignore
+    stackRestore(stack: any) {
         throw new Error("Method not implemented.")
     }
 

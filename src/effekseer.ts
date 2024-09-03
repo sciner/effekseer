@@ -463,7 +463,9 @@ return !(image.width & (image.width - 1)) && !(image.height & (image.height - 1)
 let calcNextPowerOfTwo = (v: number) => {
 var sizes = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048];
 
-// var foundInd = -1;
+// @ts-ignore
+var foundInd = -1;
+
 for (var i = 0; i < sizes.length; i++) {
   if (sizes[i] >= v) {
     return sizes[i];
@@ -1131,7 +1133,8 @@ resetBackground() {
 * @param {function=} onload A function that is called at loading complete
 * @param {function=} onerror A function that is called at loading error.
 */
-export function initRuntime(path: string, onload: any, onerror: any) {
+// @ts-ignore
+function initRuntime(path: string, onload: any, onerror: any) {
   if (typeof effekseer_native === "undefined") {
     onload();
     return;
@@ -1146,7 +1149,8 @@ export function initRuntime(path: string, onload: any, onerror: any) {
  * Create a context to render in multiple scenes
  * @returns {EffekseerContext} context
  */
-export function createContext() {
+// @ts-ignore
+function createContext() {
   if (!_is_runtime_initialized) {
     return null;
   }
@@ -1158,7 +1162,8 @@ export function createContext() {
 * Release specified context. After that, don't touch a context
 * @param {EffekseerContext} context context
 */
-export function releaseContext(context: EffekseerContext) {
+// @ts-ignore
+function releaseContext(context: EffekseerContext) {
   if (context.contextStates) {
     context.contextStates.release();
   }
@@ -1178,7 +1183,8 @@ export function releaseContext(context: EffekseerContext) {
  * Set the flag whether Effekseer show logs
  * @param {boolean} flag
  */
-export function setLogEnabled(flag: boolean) {
+// @ts-ignore
+function setLogEnabled(flag: boolean) {
   Core.SetLogEnabled(flag);
 }
 
@@ -1186,6 +1192,7 @@ export function setLogEnabled(flag: boolean) {
  * Set the string of cross origin for images
  * @param {string} crossOrigin
  */
-export function setImageCrossOrigin(crossOrigin: string) {
+// @ts-ignore
+function setImageCrossOrigin(crossOrigin: string) {
   _imageCrossOrigin = crossOrigin;
 }
