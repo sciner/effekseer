@@ -88,7 +88,7 @@ Module._loadImage = path => {
     isRequired: true
   };
 
-  
+
   effect.resources.push(res);
 
   var path = effect.baseDir + path;
@@ -463,7 +463,7 @@ return !(image.width & (image.width - 1)) && !(image.height & (image.height - 1)
 let calcNextPowerOfTwo = (v: number) => {
 var sizes = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048];
 
-var foundInd = -1;
+// var foundInd = -1;
 for (var i = 0; i < sizes.length; i++) {
   if (sizes[i] >= v) {
     return sizes[i];
