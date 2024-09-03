@@ -1133,8 +1133,7 @@ resetBackground() {
 * @param {function=} onload A function that is called at loading complete
 * @param {function=} onerror A function that is called at loading error.
 */
-// @ts-ignore
-function initRuntime(path: string, onload: any, onerror: any) {
+export function initRuntime(path: string, onload: any, onerror: any) {
   if (typeof effekseer_native === "undefined") {
     onload();
     return;
@@ -1149,8 +1148,7 @@ function initRuntime(path: string, onload: any, onerror: any) {
  * Create a context to render in multiple scenes
  * @returns {EffekseerContext} context
  */
-// @ts-ignore
-function createContext() {
+export function createContext() {
   if (!_is_runtime_initialized) {
     return null;
   }
@@ -1162,8 +1160,7 @@ function createContext() {
 * Release specified context. After that, don't touch a context
 * @param {EffekseerContext} context context
 */
-// @ts-ignore
-function releaseContext(context: EffekseerContext) {
+export function releaseContext(context: EffekseerContext) {
   if (context.contextStates) {
     context.contextStates.release();
   }
@@ -1183,8 +1180,7 @@ function releaseContext(context: EffekseerContext) {
  * Set the flag whether Effekseer show logs
  * @param {boolean} flag
  */
-// @ts-ignore
-function setLogEnabled(flag: boolean) {
+export function setLogEnabled(flag: boolean) {
   Core.SetLogEnabled(flag);
 }
 
@@ -1192,7 +1188,6 @@ function setLogEnabled(flag: boolean) {
  * Set the string of cross origin for images
  * @param {string} crossOrigin
  */
-// @ts-ignore
-function setImageCrossOrigin(crossOrigin: string) {
+export  function setImageCrossOrigin(crossOrigin: string) {
   _imageCrossOrigin = crossOrigin;
 }
