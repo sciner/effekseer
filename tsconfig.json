@@ -16,7 +16,8 @@
         "resolveJsonModule": true,
         "downlevelIteration": true,
         "skipDefaultLibCheck": true,
-        "verbatimModuleSyntax": true
+        "verbatimModuleSyntax": true,
+        "outDir": "./lib"
     },
     "exclude": [
         "node_modules",
