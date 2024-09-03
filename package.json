@@ -1,0 +1,39 @@
+{
+  "type": "module",
+  "name": "@sciner/effekseer",
+  "version": "1.0.0",
+  "description": "Effekseer runtime compatible with Tesera renderer",
+  "keywords": [
+    "wasm",
+	  "particles"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.mjs"
+      }
+    }
+  },
+  "repository": "https://github.com/sciner/effekseer.git",
+  "publishConfig": {
+    "sciner:registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "compile-js": "tsc -p ./tsconfig.json",
+    "watch": "tsc -w -p ./tsconfig.json"
+  },
+  "files": [
+    "lib",
+    "src",
+    "effekseer.wasm",
+    "index.mjs"
+  ],
+  "peerDependencies": {
+    "@sciner/pixi": "0.3.x"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.3",
+    "@sciner/pixi": "0.3.14"
+  }
+}
