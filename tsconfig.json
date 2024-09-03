@@ -17,7 +17,7 @@
         "downlevelIteration": true,
         "skipDefaultLibCheck": true,
         "verbatimModuleSyntax": true,
-        "outDir": "./lib"
+        "outDir": "./example/lib"
     },
     "exclude": [
         "node_modules",

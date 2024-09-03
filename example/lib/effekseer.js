@@ -974,7 +974,7 @@ class EffekseerContext {
 * @param {function=} onload A function that is called at loading complete
 * @param {function=} onerror A function that is called at loading error.
 */
-initRuntime(path, onload, onerror) {
+export function initRuntime(path, onload, onerror) {
     if (typeof effekseer_native === "undefined") {
         onload();
         return;
@@ -987,7 +987,7 @@ initRuntime(path, onload, onerror) {
  * Create a context to render in multiple scenes
  * @returns {EffekseerContext} context
  */
-createContext() {
+export function createContext() {
     if (!_is_runtime_initialized) {
         return null;
     }
@@ -997,7 +997,7 @@ createContext() {
 * Release specified context. After that, don't touch a context
 * @param {EffekseerContext} context context
 */
-releaseContext(context) {
+export function releaseContext(context) {
     if (context.contextStates) {
         context.contextStates.release();
     }
@@ -1014,13 +1014,13 @@ releaseContext(context) {
  * Set the flag whether Effekseer show logs
  * @param {boolean} flag
  */
-setLogEnabled(flag) {
+export function setLogEnabled(flag) {
     Core.SetLogEnabled(flag);
 }
 /**
  * Set the string of cross origin for images
  * @param {string} crossOrigin
  */
-setImageCrossOrigin(crossOrigin) {
+export function setImageCrossOrigin(crossOrigin) {
     _imageCrossOrigin = crossOrigin;
 }
