@@ -20,7 +20,7 @@
     </div>
     <br>
     <script type='module'>
-        import * as effekseer from '../lib/index.js';
+        import { effekseer } from '../lib/effekseer.js';
 
       function capturePNG() {
           return document.getElementById('canvas').toDataURL('image/png').substring(21)
@@ -44,11 +44,11 @@
 
         var renderer = new THREE.WebGLRenderer({ canvas: canvas , preserveDrawingBuffer: true});
         renderer.setSize(width, height);
-        //document.body.appendChild( renderer.domElement );
+        // document.body.appendChild( renderer.domElement );
         effekseer.initRuntime('../effekseer.wasm', () => {
           var context = effekseer.createContext();
 
-          context.init(renderer.context);
+          context.init(renderer.getContext())//, { instanceMaxCount: 8000, squareMaxCount: 8000 * 2, cubicMaxCount: 8000 * 2 });
           var buttons = document.getElementById("buttons");
           tests.map(function (path) {
             var name = path.substr(path.lastIndexOf("/")+1)
