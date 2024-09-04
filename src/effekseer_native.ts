@@ -1,7 +1,9 @@
 export var effekseer_native = (function() {
+
     var _scriptDir = typeof document !== 'undefined' && document.currentScript ? document.currentScript.src : undefined;
     if (typeof __filename !== 'undefined')
         _scriptDir = _scriptDir || __filename;
+
     return (function(effekseer_native) {
         effekseer_native = effekseer_native || {};
 
@@ -264,8 +266,8 @@ export var effekseer_native = (function() {
             var wrappedFunc = instance.exports["f"];
             return wrappedFunc
         }
-        var freeTableIndexes = [];
-        var functionsInTableMap;
+        var freeTableIndexes: any[] = [];
+        var functionsInTableMap: any;
         function addFunctionWasm(func, sig) {
             var table = wasmTable;
             if (!functionsInTableMap) {
@@ -320,10 +322,10 @@ export var effekseer_native = (function() {
             }
         }
         var tempRet0 = 0;
-        var setTempRet0 = function(value) {
+        var setTempRet0 = function(value: any) {
             tempRet0 = value
         };
-        var wasmBinary;
+        var wasmBinary: any
         if (Module["wasmBinary"])
             wasmBinary = Module["wasmBinary"];
         var noExitRuntime;
@@ -332,7 +334,7 @@ export var effekseer_native = (function() {
         if (typeof WebAssembly !== "object") {
             err("no native wasm support detected")
         }
-        function setValue(ptr, value, type, noSafe) {
+        function setValue(ptr: any, value: any, type: any, noSafe: any) {
             type = type || "i8";
             if (type.charAt(type.length - 1) === "*")
                 type = "i32";
@@ -365,7 +367,7 @@ export var effekseer_native = (function() {
                 abort("invalid type for setValue: " + type)
             }
         }
-        var wasmMemory;
+        var wasmMemory: any
         var wasmTable = new WebAssembly.Table({
             "initial": 1296,
             "maximum": 1296 + 0,
@@ -479,10 +481,10 @@ export var effekseer_native = (function() {
             }
             return str
         }
-        function UTF8ToString(ptr, maxBytesToRead) {
+        function UTF8ToString(ptr: any, maxBytesToRead: any): any {
             return ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead) : ""
         }
-        function stringToUTF8Array(str, heap, outIdx, maxBytesToWrite) {
+        function stringToUTF8Array(str: any, heap: any, outIdx: any, maxBytesToWrite: any) {
             if (!(maxBytesToWrite > 0))
                 return 0;
             var startIdx = outIdx;
@@ -520,10 +522,10 @@ export var effekseer_native = (function() {
             heap[outIdx] = 0;
             return outIdx - startIdx
         }
-        function stringToUTF8(str, outPtr, maxBytesToWrite) {
+        function stringToUTF8(str: any, outPtr: any, maxBytesToWrite: any) {
             return stringToUTF8Array(str, HEAPU8, outPtr, maxBytesToWrite)
         }
-        function lengthBytesUTF8(str) {
+        function lengthBytesUTF8(str: any) {
             var len = 0;
             for (var i = 0; i < str.length; ++i) {
                 var u = str.charCodeAt(i);
@@ -628,11 +630,11 @@ export var effekseer_native = (function() {
                 }
             }
         }
-        var __ATPRERUN__ = [];
-        var __ATINIT__ = [];
-        var __ATMAIN__ = [];
-        var __ATEXIT__ = [];
-        var __ATPOSTRUN__ = [];
+        var __ATPRERUN__: any = [];
+        var __ATINIT__: any = [];
+        var __ATMAIN__: any = [];
+        var __ATEXIT__: any = [];
+        var __ATPOSTRUN__: any = [];
         var runtimeInitialized = false;
         var runtimeExited = false;
         function preRun() {
@@ -676,18 +678,18 @@ export var effekseer_native = (function() {
         var Math_floor = Math.floor;
         var Math_min = Math.min;
         var runDependencies = 0;
-        var runDependencyWatcher = null;
-        var dependenciesFulfilled = null;
-        function getUniqueRunDependency(id) {
+        var runDependencyWatcher: any = null;
+        var dependenciesFulfilled: any = null;
+        function getUniqueRunDependency(id: any) {
             return id
         }
-        function addRunDependency(id) {
+        function addRunDependency(id: any) {
             runDependencies++;
             if (Module["monitorRunDependencies"]) {
                 Module["monitorRunDependencies"](runDependencies)
             }
         }
-        function removeRunDependency(id) {
+        function removeRunDependency(id: any) {
             runDependencies--;
             if (Module["monitorRunDependencies"]) {
                 Module["monitorRunDependencies"](runDependencies)
@@ -706,7 +708,7 @@ export var effekseer_native = (function() {
         }
         Module["preloadedImages"] = {};
         Module["preloadedAudios"] = {};
-        function abort(what) {
+        function abort(what: any) {
             if (Module["onAbort"]) {
                 Module["onAbort"](what)
             }
@@ -718,15 +720,15 @@ export var effekseer_native = (function() {
             what = "abort(" + what + "). Build with -s ASSERTIONS=1 for more info.";
             throw new WebAssembly.RuntimeError(what)
         }
-        function hasPrefix(str, prefix) {
+        function hasPrefix(str: any, prefix: any) {
             return String.prototype.startsWith ? str.startsWith(prefix) : str.indexOf(prefix) === 0
         }
         var dataURIPrefix = "data:application/octet-stream;base64,";
-        function isDataURI(filename) {
+        function isDataURI(filename: any) {
             return hasPrefix(filename, dataURIPrefix)
         }
         var fileURIPrefix = "file://";
-        function isFileURI(filename) {
+        function isFileURI(filename: any) {
             return hasPrefix(filename, fileURIPrefix)
         }
         var wasmBinaryFile = "effekseer.core.wasm";
@@ -770,16 +772,16 @@ export var effekseer_native = (function() {
                 "env": asmLibraryArg,
                 "wasi_snapshot_preview1": asmLibraryArg
             };
-            function receiveInstance(instance, module) {
+            function receiveInstance(instance: any, module?: any) {
                 var exports = instance.exports;
                 Module["asm"] = exports;
                 removeRunDependency("wasm-instantiate")
             }
             addRunDependency("wasm-instantiate");
-            function receiveInstantiatedSource(output) {
+            function receiveInstantiatedSource(output: any) {
                 receiveInstance(output["instance"])
             }
-            function instantiateArrayBuffer(receiver) {
+            function instantiateArrayBuffer(receiver: any) {
                 return getBinaryPromise().then(function(binary) {
                     return WebAssembly.instantiate(binary, info)
                 }).then(receiver, function(reason) {
@@ -817,7 +819,7 @@ export var effekseer_native = (function() {
         }
         var tempDouble;
         var tempI64;
-        var ASM_CONSTS = {
+        var ASM_CONSTS: any = {
             343260: function($0: any, $1: any) {
                 return Module._loadBinary(UTF16ToString($0), $1) != null
             },
@@ -857,10 +859,10 @@ export var effekseer_native = (function() {
                 ___wasm_call_ctors()
             }
         });
-        function demangle(func) {
+        function demangle(func: any) {
             return func
         }
-        function demangleAll(text) {
+        function demangleAll(text: any) {
             var regex = /\b_Z[\w\d_]+/g;
             return text.replace(regex, function(x) {
                 var y = demangle(x);
@@ -890,15 +892,15 @@ export var effekseer_native = (function() {
                 arg: arg
             })
         }
-        function ___cxa_atexit(a0, a1) {
+        function ___cxa_atexit(a0: any, a1: any) {
             return _atexit(a0, a1)
         }
-        var ___exception_infos = {};
+        var ___exception_infos: any = {};
         var ___exception_last = 0;
-        function __ZSt18uncaught_exceptionv() {
+        function __ZSt18uncaught_exceptionv(): any {
             return __ZSt18uncaught_exceptionv.uncaught_exceptions > 0
         }
-        function ___cxa_throw(ptr, type, destructor) {
+        function ___cxa_throw(ptr: any, type: any, destructor: any) {
             ___exception_infos[ptr] = {
                 ptr: ptr,
                 adjusted: [ptr],
@@ -1436,7 +1438,7 @@ export var effekseer_native = (function() {
                 var ctx;
                 var contextHandle;
                 if (useWebGL) {
-                    var contextAttributes = {
+                    var contextAttributes: any = {
                         antialias: false,
                         alpha: false,
                         majorVersion: 1
@@ -1517,13 +1519,15 @@ export var effekseer_native = (function() {
                     document.addEventListener("webkitfullscreenchange", fullscreenChange, false);
                     document.addEventListener("MSFullscreenChange", fullscreenChange, false)
                 }
-                var canvasContainer = document.createElement("div");
+                var canvasContainer: any = document.createElement("div");
                 canvas.parentNode.insertBefore(canvasContainer, canvas);
                 canvasContainer.appendChild(canvas);
                 canvasContainer.requestFullscreen = canvasContainer["requestFullscreen"] || canvasContainer["mozRequestFullScreen"] || canvasContainer["msRequestFullscreen"] || (canvasContainer["webkitRequestFullscreen"] ? function() {
+                    // @ts-ignore
                     canvasContainer["webkitRequestFullscreen"](Element["ALLOW_KEYBOARD_INPUT"])
                 }
                 : null) || (canvasContainer["webkitRequestFullScreen"] ? function() {
+                    // @ts-ignore
                     canvasContainer["webkitRequestFullScreen"](Element["ALLOW_KEYBOARD_INPUT"])
                 }
                 : null);
@@ -1533,13 +1537,14 @@ export var effekseer_native = (function() {
                 if (!Browser.isFullscreen) {
                     return false
                 }
+                // @ts-ignore
                 var CFS = document["exitFullscreen"] || document["cancelFullScreen"] || document["mozCancelFullScreen"] || document["msExitFullscreen"] || document["webkitCancelFullScreen"] || function() {}
                 ;
                 CFS.apply(document, []);
                 return true
             },
             nextRAF: 0,
-            fakeRequestAnimationFrame: function(func) {
+            fakeRequestAnimationFrame: function(func: any) {
                 var now = Date.now();
                 if (Browser.nextRAF === 0) {
                     Browser.nextRAF = now + 1e3 / 60
@@ -1551,7 +1556,7 @@ export var effekseer_native = (function() {
                 var delay = Math.max(Browser.nextRAF - now, 0);
                 setTimeout(func, delay)
             },
-            requestAnimationFrame: function(func) {
+            requestAnimationFrame: function(func: any) {
                 if (typeof requestAnimationFrame === "function") {
                     requestAnimationFrame(func);
                     return
@@ -1559,7 +1564,7 @@ export var effekseer_native = (function() {
                 var RAF = Browser.fakeRequestAnimationFrame;
                 RAF(func)
             },
-            safeCallback: function(func) {
+            safeCallback: function(func: any) {
                 return function() {
                     if (!ABORT)
                         return func.apply(null, arguments)
@@ -1575,7 +1580,7 @@ export var effekseer_native = (function() {
                 if (Browser.queuedAsyncCallbacks.length > 0) {
                     var callbacks = Browser.queuedAsyncCallbacks;
                     Browser.queuedAsyncCallbacks = [];
-                    callbacks.forEach(function(func) {
+                    callbacks.forEach(function(func: any) {
                         func()
                     })
                 }
@@ -1591,7 +1596,7 @@ export var effekseer_native = (function() {
                     }
                 })
             },
-            safeSetTimeout: function(func, timeout) {
+            safeSetTimeout: function(func: any, timeout: any) {
                 noExitRuntime = true;
                 return setTimeout(function() {
                     if (ABORT)
@@ -1613,7 +1618,8 @@ export var effekseer_native = (function() {
                     }
                 }, timeout)
             },
-            getMimetype: function(name) {
+            getMimetype: function(name: any): any {
+                // @ts-ignore
                 return {
                     "jpg": "image/jpeg",
                     "jpeg": "image/jpeg",
@@ -1624,19 +1630,22 @@ export var effekseer_native = (function() {
                     "mp3": "audio/mpeg"
                 }[name.substr(name.lastIndexOf(".") + 1)]
             },
-            getUserMedia: function(func) {
+            getUserMedia: function(func: any) {
+                // @ts-ignore
                 if (!window.getUserMedia) {
+                    // @ts-ignore
                     window.getUserMedia = navigator["getUserMedia"] || navigator["mozGetUserMedia"]
                 }
+                // @ts-ignore
                 window.getUserMedia(func)
             },
-            getMovementX: function(event) {
+            getMovementX: function(event: any) {
                 return event["movementX"] || event["mozMovementX"] || event["webkitMovementX"] || 0
             },
-            getMovementY: function(event) {
+            getMovementY: function(event: any) {
                 return event["movementY"] || event["mozMovementY"] || event["webkitMovementY"] || 0
             },
-            getMouseWheelDelta: function(event) {
+            getMouseWheelDelta: function(event: any) {
                 var delta = 0;
                 switch (event.type) {
                 case "DOMMouseScroll":
@@ -1672,7 +1681,7 @@ export var effekseer_native = (function() {
             mouseMovementY: 0,
             touches: {},
             lastTouches: {},
-            calculateMouseEvent: function(event) {
+            calculateMouseEvent: function(event: any) {
                 if (Browser.pointerLock) {
                     if (event.type != "mousemove" && "mozMovementX"in event) {
                         Browser.mouseMovementX = Browser.mouseMovementY = 0
@@ -1680,8 +1689,11 @@ export var effekseer_native = (function() {
                         Browser.mouseMovementX = Browser.getMovementX(event);
                         Browser.mouseMovementY = Browser.getMovementY(event)
                     }
+                    // @ts-ignore
                     if (typeof SDL != "undefined") {
-                        Browser.mouseX = SDL.mouseX + Browser.mouseMovementX;
+                        // @ts-ignore
+                        Browser.mouseX = SDL.mouseX + Browser.mouseMovementX
+                        // @ts-ignore
                         Browser.mouseY = SDL.mouseY + Browser.mouseMovementY
                     } else {
                         Browser.mouseX += Browser.mouseMovementX;
@@ -1728,14 +1740,14 @@ export var effekseer_native = (function() {
                     Browser.mouseY = y
                 }
             },
-            asyncLoad: function(url, onload, onerror, noRunDep) {
+            asyncLoad: function(url: any, onload: any, onerror: any, noRunDep: any) {
                 var dep = !noRunDep ? getUniqueRunDependency("al " + url) : "";
                 readAsync(url, function(arrayBuffer) {
                     assert(arrayBuffer, 'Loading data file "' + url + '" failed (no arrayBuffer).');
                     onload(new Uint8Array(arrayBuffer));
                     if (dep)
                         removeRunDependency(dep)
-                }, function(event) {
+                }, function(event: any) {
                     if (onerror) {
                         onerror()
                     } else {
@@ -3112,12 +3124,12 @@ export var effekseer_native = (function() {
                 AL.freeIds.push(srcId)
             }
         }
-        function _alGenBuffers(count, pBufferIds) {
+        function _alGenBuffers(count: any, pBufferIds: any) {
             if (!AL.currentCtx) {
                 return
             }
             for (var i = 0; i < count; ++i) {
-                var buf = {
+                var buf: any = {
                     deviceId: AL.currentCtx.deviceId,
                     id: AL.newId(),
                     refCount: 0,
@@ -3132,14 +3144,14 @@ export var effekseer_native = (function() {
                 HEAP32[pBufferIds + i * 4 >> 2] = buf.id
             }
         }
-        function _alGenSources(count, pSourceIds) {
+        function _alGenSources(count: any, pSourceIds: any) {
             if (!AL.currentCtx) {
                 return
             }
             for (var i = 0; i < count; ++i) {
                 var gain = AL.currentCtx.audioCtx.createGain();
                 gain.connect(AL.currentCtx.gain);
-                var src = {
+                var src: any = {
                     context: AL.currentCtx,
                     id: AL.newId(),
                     type: 4144,
@@ -3176,7 +3188,7 @@ export var effekseer_native = (function() {
                 HEAP32[pSourceIds + i * 4 >> 2] = src.id
             }
         }
-        function _alGetSourcei(sourceId, param, pValue) {
+        function _alGetSourcei(sourceId: any, param: any, pValue: any) {
             var val = AL.getSourceParam("alGetSourcei", sourceId, param);
             if (val === null) {
                 return
@@ -3212,7 +3224,7 @@ export var effekseer_native = (function() {
                 return
             }
         }
-        function _alListenerfv(param, pValues) {
+        function _alListenerfv(param: any, pValues: any) {
             if (!AL.currentCtx) {
                 return
             }
@@ -3242,7 +3254,7 @@ export var effekseer_native = (function() {
                 break
             }
         }
-        function _alSourcePause(sourceId) {
+        function _alSourcePause(sourceId: any) {
             if (!AL.currentCtx) {
                 return
             }
@@ -3253,7 +3265,7 @@ export var effekseer_native = (function() {
             }
             AL.setSourceState(src, 4115)
         }
-        function _alSourcePlay(sourceId) {
+        function _alSourcePlay(sourceId: any) {
             if (!AL.currentCtx) {
                 return
             }
@@ -3275,7 +3287,7 @@ export var effekseer_native = (function() {
             }
             AL.setSourceState(src, 4116)
         }
-        function _alSourcef(sourceId, param, value) {
+        function _alSourcef(sourceId: any, param: any, value: any) {
             switch (param) {
             case 4097:
             case 4098:
@@ -3582,35 +3594,35 @@ export var effekseer_native = (function() {
                 }
             }
         }
-        function __webgl_acquireVertexArrayObjectExtension(ctx) {
+        function __webgl_acquireVertexArrayObjectExtension(ctx: any) {
             var ext = ctx.getExtension("OES_vertex_array_object");
             if (ext) {
                 ctx["createVertexArray"] = function() {
                     return ext["createVertexArrayOES"]()
                 }
                 ;
-                ctx["deleteVertexArray"] = function(vao) {
+                ctx["deleteVertexArray"] = function(vao: any) {
                     ext["deleteVertexArrayOES"](vao)
                 }
                 ;
-                ctx["bindVertexArray"] = function(vao) {
+                ctx["bindVertexArray"] = function(vao: any) {
                     ext["bindVertexArrayOES"](vao)
                 }
                 ;
-                ctx["isVertexArray"] = function(vao) {
+                ctx["isVertexArray"] = function(vao: any) {
                     return ext["isVertexArrayOES"](vao)
                 }
             }
         }
-        function __webgl_acquireDrawBuffersExtension(ctx) {
+        function __webgl_acquireDrawBuffersExtension(ctx: any) {
             var ext = ctx.getExtension("WEBGL_draw_buffers");
             if (ext) {
-                ctx["drawBuffers"] = function(n, bufs) {
+                ctx["drawBuffers"] = function(n: any, bufs: any) {
                     ext["drawBuffersWEBGL"](n, bufs)
                 }
             }
         }
-        var GL = {
+        var GL: any = {
             counter: 1,
             lastError: 0,
             buffers: [],
@@ -3639,12 +3651,12 @@ export var effekseer_native = (function() {
                     GL.miniTempBufferIntViews[i] = miniTempIntBuffer.subarray(0, i + 1)
                 }
             },
-            recordError: function recordError(errorCode) {
+            recordError: function recordError(errorCode: any) {
                 if (!GL.lastError) {
                     GL.lastError = errorCode
                 }
             },
-            getNewId: function(table) {
+            getNewId: function(table: any) {
                 var ret = GL.counter++;
                 for (var i = table.length; i < ret; i++) {
                     table[i] = null
@@ -3654,7 +3666,7 @@ export var effekseer_native = (function() {
             MINI_TEMP_BUFFER_SIZE: 256,
             miniTempBufferFloatViews: [0],
             miniTempBufferIntViews: [0],
-            getSource: function(shader, count, string, length) {
+            getSource: function(shader: any, count: any, string: any, length: any) {
                 var source = "";
                 for (var i = 0; i < count; ++i) {
                     var len = length ? HEAP32[length + i * 4 >> 2] : -1;
@@ -3662,14 +3674,14 @@ export var effekseer_native = (function() {
                 }
                 return source
             },
-            createContext: function(canvas, webGLContextAttributes) {
+            createContext: function(canvas: any, webGLContextAttributes: any) {
                 var ctx = canvas.getContext("webgl", webGLContextAttributes);
                 if (!ctx)
                     return 0;
                 var handle = GL.registerContext(ctx, webGLContextAttributes);
                 return handle
             },
-            registerContext: function(ctx, webGLContextAttributes) {
+            registerContext: function(ctx: any, webGLContextAttributes: any) {
                 var handle = GL.getNewId(GL.contexts);
                 var context = {
                     handle: handle,
@@ -3685,15 +3697,15 @@ export var effekseer_native = (function() {
                 }
                 return handle
             },
-            makeContextCurrent: function(contextHandle) {
+            makeContextCurrent: function(contextHandle: any) {
                 GL.currentContext = GL.contexts[contextHandle];
                 Module.ctx = GLctx = GL.currentContext && GL.currentContext.GLctx;
                 return !(contextHandle && !GLctx)
             },
-            getContext: function(contextHandle) {
+            getContext: function(contextHandle: any) {
                 return GL.contexts[contextHandle]
             },
-            deleteContext: function(contextHandle) {
+            deleteContext: function(contextHandle: any) {
                 if (GL.currentContext === GL.contexts[contextHandle])
                     GL.currentContext = null;
                 if (typeof JSEvents === "object")
@@ -3755,16 +3767,16 @@ export var effekseer_native = (function() {
                 }
             }
         };
-        function _emscripten_glActiveTexture(x0) {
+        function _emscripten_glActiveTexture(x0: any) {
             GLctx["activeTexture"](x0)
         }
-        function _emscripten_glAttachShader(program, shader) {
+        function _emscripten_glAttachShader(program: any, shader: any) {
             GLctx.attachShader(GL.programs[program], GL.shaders[shader])
         }
-        function _emscripten_glBeginQueryEXT(target, id) {
+        function _emscripten_glBeginQueryEXT(target: any, id: any) {
             GLctx.disjointTimerQueryExt["beginQueryEXT"](target, GL.timerQueriesEXT[id])
         }
-        function _emscripten_glBindAttribLocation(program, index, name) {
+        function _emscripten_glBindAttribLocation(program: any, index: any, name: any) {
             GLctx.bindAttribLocation(GL.programs[program], index, UTF8ToString(name))
         }
         function _emscripten_glBindBuffer(target, buffer) {
@@ -3843,15 +3855,15 @@ export var effekseer_native = (function() {
             GL.programs[id] = program;
             return id
         }
-        function _emscripten_glCreateShader(shaderType) {
+        function _emscripten_glCreateShader(shaderType: any) {
             var id = GL.getNewId(GL.shaders);
             GL.shaders[id] = GLctx.createShader(shaderType);
             return id
         }
-        function _emscripten_glCullFace(x0) {
+        function _emscripten_glCullFace(x0: any) {
             GLctx["cullFace"](x0)
         }
-        function _emscripten_glDeleteBuffers(n, buffers) {
+        function _emscripten_glDeleteBuffers(n: any, buffers: any) {
             for (var i = 0; i < n; i++) {
                 var id = HEAP32[buffers + i * 4 >> 2];
                 var buffer = GL.buffers[id];
@@ -3866,7 +3878,7 @@ export var effekseer_native = (function() {
                     GL.currElementArrayBuffer = 0
             }
         }
-        function _emscripten_glDeleteFramebuffers(n, framebuffers) {
+        function _emscripten_glDeleteFramebuffers(n: any, framebuffers: any) {
             for (var i = 0; i < n; ++i) {
                 var id = HEAP32[framebuffers + i * 4 >> 2];
                 var framebuffer = GL.framebuffers[id];
@@ -3877,7 +3889,7 @@ export var effekseer_native = (function() {
                 GL.framebuffers[id] = null
             }
         }
-        function _emscripten_glDeleteProgram(id) {
+        function _emscripten_glDeleteProgram(id: any) {
             if (!id)
                 return;
             var program = GL.programs[id];
@@ -3890,7 +3902,7 @@ export var effekseer_native = (function() {
             GL.programs[id] = null;
             GL.programInfos[id] = null
         }
-        function _emscripten_glDeleteQueriesEXT(n, ids) {
+        function _emscripten_glDeleteQueriesEXT(n: any, ids: any) {
             for (var i = 0; i < n; i++) {
                 var id = HEAP32[ids + i * 4 >> 2];
                 var query = GL.timerQueriesEXT[id];
@@ -3900,7 +3912,7 @@ export var effekseer_native = (function() {
                 GL.timerQueriesEXT[id] = null
             }
         }
-        function _emscripten_glDeleteRenderbuffers(n, renderbuffers) {
+        function _emscripten_glDeleteRenderbuffers(n: any, renderbuffers: any) {
             for (var i = 0; i < n; i++) {
                 var id = HEAP32[renderbuffers + i * 4 >> 2];
                 var renderbuffer = GL.renderbuffers[id];
@@ -3911,7 +3923,7 @@ export var effekseer_native = (function() {
                 GL.renderbuffers[id] = null
             }
         }
-        function _emscripten_glDeleteShader(id) {
+        function _emscripten_glDeleteShader(id: any) {
             if (!id)
                 return;
             var shader = GL.shaders[id];
@@ -3922,7 +3934,7 @@ export var effekseer_native = (function() {
             GLctx.deleteShader(shader);
             GL.shaders[id] = null
         }
-        function _emscripten_glDeleteTextures(n, textures) {
+        function _emscripten_glDeleteTextures(n: any, textures: any) {
             for (var i = 0; i < n; i++) {
                 var id = HEAP32[textures + i * 4 >> 2];
                 var texture = GL.textures[id];
@@ -3933,49 +3945,49 @@ export var effekseer_native = (function() {
                 GL.textures[id] = null
             }
         }
-        function _emscripten_glDeleteVertexArraysOES(n, vaos) {
+        function _emscripten_glDeleteVertexArraysOES(n: any, vaos: any) {
             for (var i = 0; i < n; i++) {
                 var id = HEAP32[vaos + i * 4 >> 2];
                 GLctx["deleteVertexArray"](GL.vaos[id]);
                 GL.vaos[id] = null
             }
         }
-        function _emscripten_glDepthFunc(x0) {
+        function _emscripten_glDepthFunc(x0: any) {
             GLctx["depthFunc"](x0)
         }
-        function _emscripten_glDepthMask(flag) {
+        function _emscripten_glDepthMask(flag: any) {
             GLctx.depthMask(!!flag)
         }
-        function _emscripten_glDepthRangef(x0, x1) {
+        function _emscripten_glDepthRangef(x0: any, x1: any) {
             GLctx["depthRange"](x0, x1)
         }
-        function _emscripten_glDetachShader(program, shader) {
+        function _emscripten_glDetachShader(program: any, shader: any) {
             GLctx.detachShader(GL.programs[program], GL.shaders[shader])
         }
-        function _emscripten_glDisable(x0) {
+        function _emscripten_glDisable(x0: any) {
             GLctx["disable"](x0)
         }
-        function _emscripten_glDisableVertexAttribArray(index) {
+        function _emscripten_glDisableVertexAttribArray(index: any) {
             GLctx.disableVertexAttribArray(index)
         }
-        function _emscripten_glDrawArrays(mode, first, count) {
+        function _emscripten_glDrawArrays(mode: any, first: any, count: any) {
             GLctx.drawArrays(mode, first, count)
         }
-        function _emscripten_glDrawArraysInstancedANGLE(mode, first, count, primcount) {
+        function _emscripten_glDrawArraysInstancedANGLE(mode: any, first: any, count: any, primcount: any) {
             GLctx["drawArraysInstanced"](mode, first, count, primcount)
         }
-        var __tempFixedLengthArray = [];
-        function _emscripten_glDrawBuffersWEBGL(n, bufs) {
+        var __tempFixedLengthArray: any[] = [];
+        function _emscripten_glDrawBuffersWEBGL(n: any, bufs: any) {
             var bufArray = __tempFixedLengthArray[n];
             for (var i = 0; i < n; i++) {
                 bufArray[i] = HEAP32[bufs + i * 4 >> 2]
             }
             GLctx["drawBuffers"](bufArray)
         }
-        function _emscripten_glDrawElements(mode, count, type, indices) {
+        function _emscripten_glDrawElements(mode: any, count: any, type: any, indices: any) {
             GLctx.drawElements(mode, count, type, indices)
         }
-        function _emscripten_glDrawElementsInstancedANGLE(mode, count, type, indices, primcount) {
+        function _emscripten_glDrawElementsInstancedANGLE(mode: any, count: any, type: any, indices: any, primcount: any) {
             GLctx["drawElementsInstanced"](mode, count, type, indices, primcount)
         }
         function _emscripten_glEnable(x0) {
@@ -5794,7 +5806,7 @@ export var effekseer_native = (function() {
             return Browser.createContext(canvas, useWebGL, setInModule, webGLContextAttributes)
         }
         ;
-        var GLctx;
+        var GLctx: any
         GL.init();
         for (var i = 0; i < 32; i++)
             __tempFixedLengthArray.push(new Array(i));
@@ -6576,6 +6588,7 @@ export var effekseer_native = (function() {
 
         return effekseer_native
     }
-    );
+    )
+
 }
 )()

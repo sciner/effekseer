@@ -152,21 +152,40 @@ function _onRuntimeInitialized() {
 };
 
 function _initalize_wasm(url: string) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = "arraybuffer";
+
+    // fetch(url)
+    //     .then(response => response.arrayBuffer()) // Получаем бинарный буфер WASM
+    //     .then(buffer => {
+    //         // Инициализация WebAssembly модуля
+    //         WebAssembly.instantiate(buffer, imports)
+    //             .then(result => {
+    //                 Module = result.instance.exports;  // Экспортируемый объект модуля
+    //                 _onRuntimeInitialized(); // Вызов пользовательской функции после инициализации
+    //             })
+    //             .catch(err => {
+    //                 console.error('Failed to initialize WebAssembly module:', err);
+    //             });
+    //     })
+    //     .catch(err => {
+    //         console.error('Failed to fetch WebAssembly module:', err);
+    //     });
+
+    var xhr = new XMLHttpRequest()
+    xhr.open('GET', url, true)
+    xhr.responseType = "arraybuffer"
     xhr.onload = function () {
         const params = {wasmBinary: xhr.response};
         // params.onRuntimeInitialized = _onRuntimeInitialized;
         effekseer_native(params).then(function (module: any) {
             Module = module;
-            _onRuntimeInitialized();
-        });
-    };
+            _onRuntimeInitialized()
+        })
+    }
     xhr.onerror = function () {
-        _onerrorAssembly();
+        _onerrorAssembly()
     };
-    xhr.send(null);
+    xhr.send(null)
+
 }
 
 function _isImagePowerOfTwo(image: any) {
@@ -713,9 +732,9 @@ class EffekseerContext {
         Core.StopAllEffects(this.nativeptr)
     }
 
-    setResourceLoader(loader: any) {
-        _loadResource = loader
-    }
+    // setResourceLoader(loader: any) {
+    //     _loadResource = loader
+    // }
 
     getRestInstancesCount(): number {
         return Core.GetRestInstancesCount(this.nativeptr)
@@ -983,14 +1002,14 @@ class Effekseer {
         this.defaultContext?.stopAll()
     }
 
-    /**
-     * Set the resource loader function.
-     * @param {function} loader
-     */
-    setResourceLoader(loader: Function) {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.setResourceLoader(loader)
-    }
+    // /**
+    //  * Set the resource loader function.
+    //  * @param {function} loader
+    //  */
+    // setResourceLoader(loader: Function) {
+    //     console.warn('deprecated: please use through createContext.')
+    //     this.defaultContext?.setResourceLoader(loader)
+    // }
 
     /**
      * Get whether VAO is supported
