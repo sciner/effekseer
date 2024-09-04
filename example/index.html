@@ -12,7 +12,7 @@
 
     <body>
 
-        <canvas id="canvas" width="320" height="240" class="screen" oncontextmenu="event.preventDefault()"></canvas>
+        <canvas id="canvas" width="640" height="480" class="screen" oncontextmenu="event.preventDefault()"></canvas>
 
         <div id="buttons"></div>
 
@@ -32,7 +32,7 @@
                 const scene   = new THREE.Scene()
                 const width   = canvas.width
                 const height  = canvas.height
-                const fov     = 30
+                const fov     = 60
                 const aspect  = width / height
                 const near    = 1
                 const far     = 1000
@@ -61,7 +61,8 @@
 
                     // Загружаем эффекты
                     const buttons = document.getElementById("buttons")
-                    tests.map(function (path) {
+                    tests.map(function(path) {
+                        if(path.startsWith('-')) return
                         const name = path.substr(path.lastIndexOf("/") + 1)
                         effects[name] = context.loadEffect(path)
                         const btn = document.createElement('input')
