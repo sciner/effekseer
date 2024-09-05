@@ -7,6 +7,7 @@ var _imageCrossOrigin = ''
 var _onloadAssembly = function _onloadAssembly() { }
 var _onerrorAssembly = function _onerrorAssembly() { }
 var _is_runtime_initialized = false;
+var __initPromise: Promise<any> = null
 var loadingEffect: any = null;
 
 function _onRuntimeInitialized() {
@@ -267,7 +268,7 @@ function _loadResource(path: any, onload: any, onerror: any) {
     }
 }
 
-class EffekseerEffect {
+export class EffekseerEffect {
     context: any
     nativeptr: number
     baseDir: string
@@ -308,7 +309,7 @@ class EffekseerEffect {
         const json = JSON.parse(text)
         let efkFile
         const dependencies: string[] = []
-        
+
         for (const key in json.files) {
             const val = json.files[key]
             if (val.type === 'Effect') {
@@ -316,7 +317,7 @@ class EffekseerEffect {
                 dependencies.push(...val.dependencies)
             }
         }
-        
+
         for (const dep of dependencies) {
             const _buffer = unzip.decompress(dep)
             Module.resourcesMap[dep] = _buffer.buffer
@@ -359,7 +360,7 @@ class EffekseerEffect {
     }
 }
 
-class EffekseerHandle {
+export class EffekseerHandle {
     context: any
     native: any
 
@@ -527,7 +528,7 @@ class ContextStates {
     }
 }
 
-class EffekseerContext {
+export class EffekseerContext {
     _gl: WebGLRenderingContext | null = null
     contextStates: ContextStates | null = null
     ctx: any = null
@@ -766,261 +767,73 @@ class EffekseerContext {
     }
 }
 
-class Effekseer {
-    defaultContext: EffekseerContext | null = null
-
-    /**
-     * Initialize Effekseer.js.
-     * This function must be called at first if use WebAssembly
-     * @param {string} path A file of webassembly
-     * @param {function=} onload A function that is called at loading complete
-     * @param {function=} onerror A function that is called at loading error.
-     */
-    initRuntime(path: string, onload: any, onerror?: any) {
-        if (typeof effekseer_native === "undefined") {
-            onload()
-            return
-        }
-        _onloadAssembly = onload
-        _onerrorAssembly = onerror
-        _initalize_wasm(path)
+/**
+ * Initialize Effekseer.js.
+ * This function must be called at first if use WebAssembly
+ * @param {string} path A file of webassembly
+ * @param {function=} onload A function that is called at loading complete
+ * @param {function=} onerror A function that is called at loading error.
+ */
+export function initRuntime(path: string, onload: any, onerror?: any) {
+    if (typeof effekseer_native === "undefined") {
+        onload()
+        return
     }
+    _onloadAssembly = onload
+    _onerrorAssembly = onerror
+    _initalize_wasm(path)
+}
+
+export function initRuntimePromise(path: string): Promise<any> {
+    if (__initPromise) {
+        return __initPromise
+    }
+    return __initPromise = new Promise((resolve, reject) => {
+        this.initRuntime(path, resolve, reject)
+    })
+}
 
     /**
      * Create a context to render in multiple scenes
      * @returns {EffekseerContext} context
      */
-    createContext(): EffekseerContext | null {
-        if (!_is_runtime_initialized) {
-            return null
-        }
-        return new EffekseerContext()
+export function createContext(): EffekseerContext | null {
+    if (!_is_runtime_initialized) {
+        return null
     }
+    return new EffekseerContext()
+}
 
     /**
      * Release specified context. After that, don't touch a context
      * @param {EffekseerContext} context context
      */
-    releaseContext(context: EffekseerContext) {
-        if (context.contextStates) {
-            context.contextStates.release()
-        }
-        if (context._gl) {
-            context._gl = null
-        }
-        if (context.nativeptr == null) {
-            return
-        }
-        Core.Terminate(context.nativeptr)
-        context.nativeptr = null
+export function releaseContext(context: EffekseerContext) {
+    if (context.contextStates) {
+        context.contextStates.release()
     }
-
-    /**
-     * Set the flag whether Effekseer shows logs
-     * @param {boolean} flag
-     */
-    setLogEnabled(flag: boolean) {
-        Core.SetLogEnabled(flag)
+    if (context._gl) {
+        context._gl = null
     }
-
-    /**
-     * Set the string of cross origin for images
-     * @param {string} crossOrigin
-     */
-    setImageCrossOrigin(crossOrigin: string) {
-        _imageCrossOrigin = crossOrigin
+    if (context.nativeptr == null) {
+        return
     }
-
-    /**
-     * Initialize graphics system.
-     * @param {WebGLRenderingContext} webglContext WebGL Context
-     * @param {object} settings Some settings with Effekseer initialization
-     */
-    init(webglContext: WebGLRenderingContext, settings?: object) {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext = new EffekseerContext()
-        this.defaultContext.init(webglContext, settings)
-    }
-
-    /**
-     * Advance frames.
-     * @param {number=} deltaFrames number of advance frames
-     */
-    update(deltaFrames?: number) {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.update(deltaFrames)
-    }
-
-    beginUpdate() {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.beginUpdate()
-    }
-
-    endUpdate() {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.endUpdate()
-    }
-
-    updateHandle(handle: EffekseerHandle, deltaFrames?: number) {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.updateHandle(handle, deltaFrames)
-    }
-
-    /**
-     * Main rendering.
-     */
-    draw() {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.draw()
-    }
-
-    beginDraw() {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.beginDraw()
-    }
-
-    endDraw() {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.endDraw()
-    }
-
-    drawHandle(handle: EffekseerHandle) {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.drawHandle(handle)
-    }
-
-    /**
-     * Set camera projection from matrix.
-     * @param {array} matrixArray An array that is required 16 elements
-     */
-    setProjectionMatrix(matrixArray: number[]) {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.setProjectionMatrix(matrixArray)
-    }
-
-    /**
-     * Set camera projection from perspective parameters.
-     * @param {number} fov Field of view in degree
-     * @param {number} aspect Aspect ratio
-     * @param {number} near Distance of near plane
-     * @param {number} far Distance of far plane
-     */
-    setProjectionPerspective(fov: number, aspect: number, near: number, far: number) {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.setProjectionPerspective(fov, aspect, near, far)
-    }
-
-    /**
-     * Set camera projection from orthographic parameters.
-     * @param {number} width Width coordinate of the view plane
-     * @param {number} height Height coordinate of the view plane
-     * @param {number} near Distance of near plane
-     * @param {number} far Distance of far plane
-     */
-    setProjectionOrthographic(width: number, height: number, near: number, far: number) {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.setProjectionOrthographic(width, height, near, far)
-    }
-
-    /**
-     * Set camera view from matrix.
-     * @param {array} matrixArray An array that is required 16 elements
-     */
-    setCameraMatrix(matrixArray: number[]) {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.setCameraMatrix(matrixArray)
-    }
-
-    /**
-     * Set camera view from lookat parameters.
-     * @param {number} positionX X value of camera position
-     * @param {number} positionY Y value of camera position
-     * @param {number} positionZ Z value of camera position
-     * @param {number} targetX X value of target position
-     * @param {number} targetY Y value of target position
-     * @param {number} targetZ Z value of target position
-     * @param {number} upvecX X value of upper vector
-     * @param {number} upvecY Y value of upper vector
-     * @param {number} upvecZ Z value of upper vector
-     */
-    setCameraLookAt(positionX: number, positionY: number, positionZ: number, targetX: number, targetY: number, targetZ: number, upvecX: number, upvecY: number, upvecZ: number) {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.setCameraLookAt(positionX, positionY, positionZ, targetX, targetY, targetZ, upvecX, upvecY, upvecZ)
-    }
-
-    /**
-     * Set camera view from lookat vector parameters.
-     * @param {object} position camera position
-     * @param {object} target target position
-     * @param {object=} upvec upper vector
-     */
-    setCameraLookAtFromVector(position: { x: number, y: number, z: number }, target: { x: number, y: number, z: number }, upvec?: { x: number, y: number, z: number }) {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.setCameraLookAtFromVector(position, target, upvec)
-    }
-
-    /**
-     * Load the effect data file (and resources).
-     * @param {string} path A URL of effect file (*.efk)
-     * @param {number} scale A magnification rate for the effect. The effect is loaded magnifying with this specified number.
-     * @param {function=} onload A function that is called at loading complete
-     * @param {function=} onerror A function that is called at loading error. First argument is a message. Second argument is an url.
-     * @returns {EffekseerEffect} The effect data
-     */
-    loadEffect(path: string, scale: number = 1.0, onload?: Function, onerror?: Function): EffekseerEffect {
-        console.warn('deprecated: please use through createContext.')
-        return this.defaultContext?.loadEffect(path, scale, onload, onerror) as EffekseerEffect
-    }
-
-    /**
-     * Release the specified effect. Don't touch the instance of effect after released.
-     * @param {EffekseerEffect} effect The loaded effect
-     */
-    releaseEffect(effect: EffekseerEffect) {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.releaseEffect(effect)
-    }
-
-    /**
-     * Play the specified effect.
-     * @param {EffekseerEffect} effect The loaded effect
-     * @param {number} x X value of location that is emitted
-     * @param {number} y Y value of location that is emitted
-     * @param {number} z Z value of location that is emitted
-     * @returns {EffekseerHandle} The effect handle
-     */
-    play(effect: EffekseerEffect, x?: number, y?: number, z?: number): EffekseerHandle | null {
-        console.warn('deprecated: please use through createContext.')
-        return this.defaultContext?.play(effect, x, y, z) || null
-    }
-
-    /**
-     * Stop all effects.
-     */
-    stopAll() {
-        console.warn('deprecated: please use through createContext.')
-        this.defaultContext?.stopAll()
-    }
-
-    // /**
-    //  * Set the resource loader function.
-    //  * @param {function} loader
-    //  */
-    // setResourceLoader(loader: Function) {
-    //     console.warn('deprecated: please use through createContext.')
-    //     this.defaultContext?.setResourceLoader(loader)
-    // }
-
-    /**
-     * Get whether VAO is supported
-     */
-    isVertexArrayObjectSupported(): boolean {
-        console.warn('deprecated: please use through createContext.')
-        return this.defaultContext?.isVertexArrayObjectSupported() || false
-    }
+    Core.Terminate(context.nativeptr)
+    context.nativeptr = null
 }
 
-export const effekseer = new Effekseer()
+export function setLogEnabled(flag: boolean) {
+    Core.SetLogEnabled(flag)
+}
+
+/**
+ * Set the string of cross origin for images
+ * @param {string} crossOrigin
+ */
+export function setImageCrossOrigin(crossOrigin: string) {
+    _imageCrossOrigin = crossOrigin
+}
+
 // _onRuntimeInitialized();
 
 // if (typeof effekseer_native === "undefined") {

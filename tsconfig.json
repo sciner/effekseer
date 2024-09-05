@@ -3,6 +3,7 @@
         "target": "es2020",
         "lib": ["ESNext", "DOM", "WebWorker"],
         "module": "ESNext",
+        "declaration": true,
         "allowJs": false,
         "removeComments": false,
         "strict": true,
