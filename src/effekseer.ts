@@ -789,7 +789,7 @@ export function initRuntimePromise(path: string): Promise<any> {
         return __initPromise
     }
     return __initPromise = new Promise((resolve, reject) => {
-        this.initRuntime(path, resolve, reject)
+        initRuntime(path, resolve, reject)
     })
 }
 
