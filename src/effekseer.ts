@@ -9,11 +9,60 @@ var _onerrorAssembly = function _onerrorAssembly() { }
 var _is_runtime_initialized = false;
 var __initPromise: Promise<any> = null
 var loadingEffect: any = null;
+// the runtime is the WebGPU one (initRuntimeWebGPU): the contexts draw over the GPUTextures of the host
+var _is_webgpu_runtime = false;
+
+// the codes of the formats for EffekseerInit and EffekseerBeginFrame of the WebGPU runtime (main_webgpu.cpp)
+const WEBGPU_COLOR_FORMATS: {[key: string]: number} = {
+    'rgba8unorm': 0,
+    'bgra8unorm': 1,
+    'rgba16float': 2,
+    'rgba8unorm-srgb': 3,
+    'bgra8unorm-srgb': 4,
+}
+const WEBGPU_DEPTH_FORMATS: {[key: string]: number} = {
+    'depth32float': 1,
+    'depth24plus-stencil8': 2,
+    'depth32float-stencil8': 3,
+}
+
+function webgpuColorFormatCode(format: string): number {
+    const code = WEBGPU_COLOR_FORMATS[format]
+    if (code === undefined) {
+        throw new Error(`Effekseer: the color format ${format} is not supported on WebGPU`)
+    }
+    return code
+}
+
+// 0: the depth is not used (no depth buffer or a format LLGI does not support)
+function webgpuDepthFormatCode(format: string | null | undefined): number {
+    return format ? (WEBGPU_DEPTH_FORMATS[format] ?? 0) : 0
+}
+
+// the ids of the GPUTextures passed to the WebGPU runtime: the render pass is rebuilt when the id changes
+const _webgpuTextureIds = new WeakMap<object, number>()
+let _webgpuNextTextureId = 0
+
+function webgpuTextureId(texture: any): number {
+    if (!texture) {
+        return -1
+    }
+    let id = _webgpuTextureIds.get(texture)
+    if (id === undefined) {
+        id = _webgpuNextTextureId++
+        _webgpuTextureIds.set(texture, id)
+    }
+    return id
+}
 
 function _onRuntimeInitialized() {
     // C++ functions
     Core = {
-        Init: Module.cwrap("EffekseerInit", "number", ["number", "number", "number"]),
+        Init: _is_webgpu_runtime
+            ? Module.cwrap("EffekseerInit", "number", ["number", "number", "number", "number", "number", "number"])
+            : Module.cwrap("EffekseerInit", "number", ["number", "number", "number"]),
+        BeginFrame: _is_webgpu_runtime ? Module.cwrap("EffekseerBeginFrame", "number", ["number", "number", "number", "number", "number", "number", "number", "number"]) : null,
+        EndFrame: _is_webgpu_runtime ? Module.cwrap("EffekseerEndFrame", "void", ["number"]) : null,
         Terminate: Module.cwrap("EffekseerTerminate", "void", ["number"]),
         Update: Module.cwrap("EffekseerUpdate", "void", ["number", "number"]),
         BeginUpdate: Module.cwrap("EffekseerBeginUpdate", "void", ["number"]),
@@ -187,6 +236,22 @@ function _initalize_wasm(url: string) {
     };
     xhr.send(null)
 
+}
+
+// the WebGPU runtime: effekseer_webgpu.mjs (emscripten ES module), its wasm is next to it
+function _initalize_webgpu(url: string) {
+    // the path is relative to the page like the wasm of the WebGL runtime, not to this module
+    const module_url = new URL(url, document.baseURI).href
+    import(/* @vite-ignore */ /* webpackIgnore: true */ module_url).then(function (factory: any) {
+        return factory.default({})
+    }).then(function (module: any) {
+        Module = module
+        _is_webgpu_runtime = true
+        _onRuntimeInitialized()
+    }).catch(function (e: any) {
+        console.error(e)
+        _onerrorAssembly()
+    })
 }
 
 function _isImagePowerOfTwo(image: any) {
@@ -528,15 +593,94 @@ class ContextStates {
     }
 }
 
+// WebGPU has no states of the host to save and restore
+class NoContextStates {
+    save() {}
+    restore() {}
+    disableVAO() {}
+    release() {}
+}
+
 export class EffekseerContext {
     _gl: WebGLRenderingContext | null = null
-    contextStates: ContextStates | null = null
+    contextStates: ContextStates | NoContextStates | null = null
     ctx: any = null
     nativeptr: any = null
     _restorationOfStatesFlag: boolean = true
+    // WebGPU: the render targets of the host the effects are drawn over (setRenderTargets)
+    _webgpu: boolean = false
+    _colorTexture: any = null
+    _depthTexture: any = null
+    _colorFormat: number = 0
+    _depthFormat: number = 0
+    _samples: number = 1
 
     _makeContextCurrent() {
+        if (this._webgpu) {
+            return
+        }
         Module.GL.makeContextCurrent(this.ctx)
+    }
+
+    /**
+     * Initialize the context on WebGPU (the runtime of initRuntimeWebGPU)
+     * @param device the GPUDevice of the host
+     * @param colorFormat the format of the render target the effects are drawn to (GPUTextureFormat)
+     * @param depthFormat the format of its depth buffer (GPUTextureFormat), null without the depth
+     */
+    initWebGPU(device: any, colorFormat: string, depthFormat: string | null, settings?: { instanceMaxCount?: number, squareMaxCount?: number, premultipliedAlpha?: boolean, reversedDepth?: boolean }) {
+        if (!_is_webgpu_runtime) {
+            throw new Error('Effekseer: initWebGPU needs the WebGPU runtime (initRuntimeWebGPU)')
+        }
+        this._webgpu = true
+        this.contextStates = new NoContextStates()
+
+        let instanceMaxCount = 4000
+        let squareMaxCount = 10000
+        let premultipliedAlpha = false
+        // the depth buffer of the host is reversed (near 1, far 0)
+        let reversedDepth = false
+
+        if (settings) {
+            if ("instanceMaxCount" in settings) instanceMaxCount = settings.instanceMaxCount!
+            if ("squareMaxCount" in settings) squareMaxCount = settings.squareMaxCount!
+            if ("premultipliedAlpha" in settings) premultipliedAlpha = settings.premultipliedAlpha!
+            if ("reversedDepth" in settings) reversedDepth = settings.reversedDepth!
+        }
+
+        // main_webgpu.cpp takes the device by emscripten_webgpu_get_device
+        Module.preinitializedWebGPUDevice = device
+        this.nativeptr = Core.Init(instanceMaxCount, squareMaxCount, webgpuColorFormatCode(colorFormat), webgpuDepthFormatCode(depthFormat), premultipliedAlpha ? 1 : 0, reversedDepth ? 1 : 0)
+        if (!this.nativeptr) {
+            throw new Error('Effekseer: failed to initialize on WebGPU')
+        }
+    }
+
+    /**
+     * WebGPU: the render targets of the host for the next draw (the effects are drawn over them, nothing is cleared).
+     * The commands of the host recorded before the draw must be submitted first: the runtime submits its own
+     * command buffer in draw()
+     * @param colorTexture GPUTexture with RENDER_ATTACHMENT (and COPY_SRC for the distortion)
+     * @param depthTexture GPUTexture of the depth with RENDER_ATTACHMENT, null without the depth test
+     */
+    setRenderTargets(colorTexture: any, depthTexture: any = null) {
+        this._colorTexture = colorTexture
+        this._depthTexture = depthTexture
+        this._colorFormat = webgpuColorFormatCode(colorTexture.format)
+        this._depthFormat = depthTexture ? webgpuDepthFormatCode(depthTexture.format) : 0
+        this._samples = colorTexture.sampleCount ?? 1
+    }
+
+    _beginFrameWebGPU(): boolean {
+        const color = this._colorTexture
+        if (!color) {
+            return false
+        }
+        const depth = this._depthFormat > 0 ? this._depthTexture : null
+        Module.effekseerImportTextures = [color, depth]
+        const res = Core.BeginFrame(this.nativeptr, webgpuTextureId(color), this._colorFormat, webgpuTextureId(depth), this._depthFormat, color.width, color.height, this._samples)
+        Module.effekseerImportTextures = null
+        return !!res
     }
 
     init(webglContext: WebGLRenderingContext, settings?: { instanceMaxCount?: number, squareMaxCount?: number, enableExtensionsByDefault?: boolean }) {
@@ -587,6 +731,13 @@ export class EffekseerContext {
     }
 
     draw() {
+        if (this._webgpu) {
+            if (this._beginFrameWebGPU()) {
+                Core.Draw(this.nativeptr)
+                Core.EndFrame(this.nativeptr)
+            }
+            return
+        }
         this._makeContextCurrent()
         let program = null
         if (this._restorationOfStatesFlag) {
@@ -603,6 +754,12 @@ export class EffekseerContext {
     }
 
     beginDraw() {
+        if (this._webgpu) {
+            if (this._beginFrameWebGPU()) {
+                Core.BeginDraw(this.nativeptr)
+            }
+            return
+        }
         if (this._restorationOfStatesFlag) {
             this.contextStates!.save()
         } else {
@@ -612,6 +769,11 @@ export class EffekseerContext {
     }
 
     endDraw() {
+        if (this._webgpu) {
+            Core.EndDraw(this.nativeptr)
+            Core.EndFrame(this.nativeptr)
+            return
+        }
         Core.EndDraw(this.nativeptr)
         if (this._restorationOfStatesFlag) {
             this.contextStates!.restore()
@@ -782,6 +944,31 @@ export function initRuntime(path: string, onload: any, onerror?: any) {
     _onloadAssembly = onload
     _onerrorAssembly = onerror
     _initalize_wasm(path)
+}
+
+/**
+ * Initialize the WebGPU runtime of Effekseer.js (the contexts are initialized by initWebGPU)
+ * @param {string} path the ES module effekseer_webgpu.mjs, the wasm is loaded next to it
+ * @param {function=} onload A function that is called at loading complete
+ * @param {function=} onerror A function that is called at loading error.
+ */
+export function initRuntimeWebGPU(path: string, onload: any, onerror?: any) {
+    _onloadAssembly = onload
+    _onerrorAssembly = onerror
+    _initalize_webgpu(path)
+}
+
+export function initRuntimeWebGPUPromise(path: string): Promise<any> {
+    if (__initPromise) {
+        return __initPromise
+    }
+    return __initPromise = new Promise((resolve, reject) => {
+        initRuntimeWebGPU(path, resolve, reject)
+    })
+}
+
+export function isWebGPURuntime(): boolean {
+    return _is_webgpu_runtime
 }
 
 export function initRuntimePromise(path: string): Promise<any> {

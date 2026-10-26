@@ -1,6 +1,9 @@
 export class TModule {
 
     GL: any = null
+    // the WebGPU runtime: the GPUDevice of the host and the GPUTextures of the current draw (main_webgpu.cpp)
+    preinitializedWebGPUDevice: any = null
+    effekseerImportTextures: any[] | null = null
     _isPowerOfTwo: (img: any) => boolean
     _loadImage: (path: string) => any
     _loadBinary: (path: string, isRequired: boolean) => any

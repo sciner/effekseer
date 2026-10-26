@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@sciner/effekseer",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Effekseer runtime compatible with Tesera renderer",
   "keywords": [
     "wasm",
@@ -29,6 +29,8 @@
     "src",
     "example",
     "effekseer.wasm",
+    "effekseer_webgpu.mjs",
+    "effekseer_webgpu.wasm",
     "index.mjs",
     "fake.mjs"
   ],

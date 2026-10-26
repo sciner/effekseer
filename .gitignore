@@ -44,5 +44,7 @@ yarn-error.log
 # Intellij
 *.iml
 
-lib/*
 out/*
+
+# the WebGPU runtime build directory (native/build.ps1)
+build-webgpu

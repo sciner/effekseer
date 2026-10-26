@@ -1,0 +1,4 @@
+[submodule "Effekseer"]
+	path = Effekseer
+	url = https://github.com/effekseer/Effekseer.git
+	shallow = true
