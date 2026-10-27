@@ -11,6 +11,8 @@ var __initPromise: Promise<any> = null
 var loadingEffect: any = null;
 // the runtime is the WebGPU one (initRuntimeWebGPU): the contexts draw over the GPUTextures of the host
 var _is_webgpu_runtime = false;
+// the WebGL runtime of Effekseer master (effekseer_webgl.mjs) is OpenGL ES 3: its context is registered as WebGL 2
+var _is_webgl2_runtime = false;
 
 // the codes of the formats for EffekseerInit and EffekseerBeginFrame of the WebGPU runtime (main_webgpu.cpp)
 const WEBGPU_COLOR_FORMATS: {[key: string]: number} = {
@@ -239,6 +241,22 @@ function _initalize_wasm(url: string) {
 }
 
 // the WebGPU runtime: effekseer_webgpu.mjs (emscripten ES module), its wasm is next to it
+// the WebGL runtime built from the same Effekseer as the WebGPU one: effekseer_webgl.mjs (emscripten ES module)
+function _initalize_webgl_module(url: string) {
+    const module_url = new URL(url, document.baseURI).href
+    import(/* @vite-ignore */ /* webpackIgnore: true */ module_url).then(function (factory: any) {
+        return factory.default({})
+    }).then(function (module: any) {
+        Module = module
+        _is_webgpu_runtime = false
+        _is_webgl2_runtime = true
+        _onRuntimeInitialized()
+    }).catch(function (e: any) {
+        console.error(e)
+        _onerrorAssembly()
+    })
+}
+
 function _initalize_webgpu(url: string) {
     // the path is relative to the page like the wasm of the WebGL runtime, not to this module
     const module_url = new URL(url, document.baseURI).href
@@ -701,7 +719,7 @@ export class EffekseerContext {
         window.gl = this._gl
 
         this.ctx = Module.GL.registerContext(webglContext, {
-            majorVersion: 1,
+            majorVersion: _is_webgl2_runtime ? 2 : 1,
             minorVersion: 0,
             enableExtensionsByDefault: enableExtensionsByDefault
         })
@@ -943,6 +961,11 @@ export function initRuntime(path: string, onload: any, onerror?: any) {
     }
     _onloadAssembly = onload
     _onerrorAssembly = onerror
+    // effekseer_webgl.mjs: the WebGL runtime of Effekseer master, effekseer.wasm: the old EffekseerForWebGL build
+    if (path.split('?')[0].endsWith('.mjs')) {
+        _initalize_webgl_module(path)
+        return
+    }
     _initalize_wasm(path)
 }
 

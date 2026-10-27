@@ -1,0 +1,39 @@
+diff --git a/Dev/Cpp/EffekseerRendererGL/EffekseerRendererGL/EffekseerRendererGL.GLExtension.cpp b/Dev/Cpp/EffekseerRendererGL/EffekseerRendererGL/EffekseerRendererGL.GLExtension.cpp
+index f731c6b..695c4ef 100644
+--- a/Dev/Cpp/EffekseerRendererGL/EffekseerRendererGL/EffekseerRendererGL.GLExtension.cpp
++++ b/Dev/Cpp/EffekseerRendererGL/EffekseerRendererGL/EffekseerRendererGL.GLExtension.cpp
+@@ -496,8 +496,14 @@ bool Initialize(OpenGLDeviceType deviceType, bool isExtensionsEnabled)
+ 	if (deviceType == OpenGLDeviceType::OpenGL3 || deviceType == OpenGLDeviceType::OpenGLES3)
+ 	{
+ 		g_isSupportedVertexArray = true;
++#if defined(__EMSCRIPTEN__)
++		// WebGL 2 maps no buffers (glBufferSubData is used) and has no timer queries
++		g_isSurrpotedBufferRange = false;
++		g_isSupportedQueries = false;
++#else
+ 		g_isSurrpotedBufferRange = true;
+ 		g_isSupportedQueries = true;
++#endif
+ 	}
+ 	if (deviceType == OpenGLDeviceType::OpenGL3)
+ 	{
+@@ -959,7 +965,9 @@ void* glMapBufferRange(GLenum target, GLintptr offset, GLsizeiptr length, GLbitf
+ 	return g_glMapBufferRangeEXT(target, offset, length, access);
+ #else
+ 
+-#if defined(__APPLE__)
++#if defined(__EMSCRIPTEN__)
++	return nullptr;
++#elif defined(__APPLE__)
+ 
+ #if defined(GL_ARB_map_buffer_range)
+ 	return ::glMapBufferRange(target, offset, length, access);
+@@ -980,6 +988,8 @@ GLboolean glUnmapBuffer(GLenum target)
+ 	return g_glUnmapBuffer(target);
+ #elif defined(__EFFEKSEER_RENDERER_GLES2__)
+ 	return g_glUnmapBufferOES(target);
++#elif defined(__EMSCRIPTEN__)
++	return GL_FALSE;
+ #else
+ 	return ::glUnmapBuffer(target);
+ #endif
