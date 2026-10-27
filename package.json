@@ -31,6 +31,8 @@
     "effekseer.wasm",
     "effekseer_webgpu.mjs",
     "effekseer_webgpu.wasm",
+    "effekseer_webgl.mjs",
+    "effekseer_webgl.wasm",
     "index.mjs",
     "fake.mjs"
   ],
