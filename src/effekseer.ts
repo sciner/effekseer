@@ -536,6 +536,13 @@ class ContextStates {
     current_ibo: any
     current_textures: any[]
     current_active_texture_id: any
+    // WebGL 2 (the runtime of Effekseer master is OpenGL ES 3): Effekseer binds its sampler objects and,
+    // in the backend draws, 2D array and 3D textures to the slots, all of them are given back to the host
+    isWebGL2: boolean
+    current_samplers: any[]
+    current_textures_array: any[]
+    current_textures_3d: any[]
+    current_program: any
 
     constructor(gl: any) {
         this.restore_texture_slot_max = 8
@@ -549,6 +556,11 @@ class ContextStates {
         this.current_textures = []
         this.current_textures.length = this.restore_texture_slot_max
         this.current_active_texture_id = null
+        this.isWebGL2 = typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext
+        this.current_samplers = new Array(this.restore_texture_slot_max).fill(null)
+        this.current_textures_array = new Array(this.restore_texture_slot_max).fill(null)
+        this.current_textures_3d = new Array(this.restore_texture_slot_max).fill(null)
+        this.current_program = null
         this.ext_vao = this._gl.getExtension('OES_vertex_array_object')
         if (this.ext_vao != null) {
             this.effekseer_vao = this.ext_vao.createVertexArrayOES()
@@ -581,9 +593,15 @@ class ContextStates {
             this._gl.bindVertexArray(this.effekseer_vao)
         }
         this.current_active_texture_id = this._gl.getParameter(this._gl.ACTIVE_TEXTURE)
+        this.current_program = this._gl.getParameter(this._gl.CURRENT_PROGRAM)
         for (let i = 0; i < this.restore_texture_slot_max; i++) {
             this._gl.activeTexture(this._gl.TEXTURE0 + i)
             this.current_textures[i] = this._gl.getParameter(this._gl.TEXTURE_BINDING_2D)
+            if (this.isWebGL2) {
+                this.current_samplers[i] = this._gl.getParameter(this._gl.SAMPLER_BINDING)
+                this.current_textures_array[i] = this._gl.getParameter(this._gl.TEXTURE_BINDING_2D_ARRAY)
+                this.current_textures_3d[i] = this._gl.getParameter(this._gl.TEXTURE_BINDING_3D)
+            }
         }
     }
 
@@ -591,8 +609,14 @@ class ContextStates {
         for (let i = 0; i < this.restore_texture_slot_max; i++) {
             this._gl.activeTexture(this._gl.TEXTURE0 + i)
             this._gl.bindTexture(this._gl.TEXTURE_2D, this.current_textures[i])
+            if (this.isWebGL2) {
+                this._gl.bindSampler(i, this.current_samplers[i])
+                this._gl.bindTexture(this._gl.TEXTURE_2D_ARRAY, this.current_textures_array[i])
+                this._gl.bindTexture(this._gl.TEXTURE_3D, this.current_textures_3d[i])
+            }
         }
         this._gl.activeTexture(this.current_active_texture_id)
+        this._gl.useProgram(this.current_program)
         if (this.ext_vao != null) {
             this.ext_vao.bindVertexArrayOES(this.current_vao)
         } else if (this.isWebGL2VAOEnabled) {
