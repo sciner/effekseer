@@ -1,0 +1,19 @@
+diff --git a/src/LLGI.Graphics.cpp b/src/LLGI.Graphics.cpp
+index e397d83..3002585 100644
+--- a/src/LLGI.Graphics.cpp
++++ b/src/LLGI.Graphics.cpp
+@@ -246,6 +246,14 @@ Buffer* SingleFrameMemoryPool::CreateConstantBuffer(int32_t size)
+ 			return nullptr;
+ 		}
+ 
++		// a bigger buffer made instead of the pooled one (WebGPU) takes its slot, otherwise a new buffer
++		// is created and lost every frame
++		if (newCb != cb)
++		{
++			buffers_[currentSwapBuffer_][offsets_[currentSwapBuffer_]] = newCb;
++			SafeRelease(cb);
++		}
++
+ 		SafeAddRef(newCb);
+ 		offsets_[currentSwapBuffer_]++;
+ 		return newCb;
