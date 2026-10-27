@@ -1,0 +1,18 @@
+diff --git a/Dev/Cpp/EffekseerRendererGL/EffekseerRendererGL/EffekseerRendererGL.Renderer.cpp b/Dev/Cpp/EffekseerRendererGL/EffekseerRendererGL/EffekseerRendererGL.Renderer.cpp
+index df16593..6aedb66 100644
+--- a/Dev/Cpp/EffekseerRendererGL/EffekseerRendererGL/EffekseerRendererGL.Renderer.cpp
++++ b/Dev/Cpp/EffekseerRendererGL/EffekseerRendererGL/EffekseerRendererGL.Renderer.cpp
+@@ -455,7 +455,12 @@ bool RendererImplemented::BeginRendering()
+ 		GLExt::glBindVertexArray(renderingVAO_->GetVAO());
+ 	}
+ 
+-	glDepthFunc(GL_LEQUAL);
++	// the depth test of the host: a reversed depth buffer (near 1, far 0) is tested with GL_GEQUAL,
++	// detected from the depth function of the host as the DX11 renderer does
++	GLint hostDepthFunc = GL_LESS;
++	glGetIntegerv(GL_DEPTH_FUNC, &hostDepthFunc);
++	impl->isDepthReversed = hostDepthFunc == GL_GREATER || hostDepthFunc == GL_GEQUAL;
++	glDepthFunc(impl->isDepthReversed ? GL_GEQUAL : GL_LEQUAL);
+ 	glEnable(GL_BLEND);
+ 	glDisable(GL_CULL_FACE);
+ 
