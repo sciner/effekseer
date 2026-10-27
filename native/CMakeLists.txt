@@ -52,3 +52,13 @@ target_link_options(effekseer_webgpu PRIVATE
   "-sEXPORTED_FUNCTIONS=['_malloc','_free','_main']"
   "-sEXPORTED_RUNTIME_METHODS=['cwrap','UTF8ToString','UTF16ToString','stackSave','stackRestore','stackAlloc','HEAP8','HEAPU8','HEAPF32','setValue','getValue']"
   "-O2")
+
+# node tool: precompiled WebGPU materials (path.efkmat -> path.efkmatd), native/tools/compile_materials.cpp
+add_executable(compile_materials ${CMAKE_CURRENT_SOURCE_DIR}/tools/compile_materials.cpp)
+target_link_libraries(compile_materials PRIVATE EffekseerRendererWebGPU EffekseerRendererLLGI LLGI Effekseer)
+target_include_directories(compile_materials PRIVATE
+  ${EFFEKSEER_DIR}/Dev/Cpp/Effekseer
+  ${EFFEKSEER_DIR}/Dev/Cpp/EffekseerRendererWebGPU)
+target_compile_options(compile_materials PRIVATE -Wno-inconsistent-missing-override)
+set_target_properties(compile_materials PROPERTIES SUFFIX ".js")
+target_link_options(compile_materials PRIVATE "-sENVIRONMENT=node" "-sNODERAWFS=1" "-sALLOW_MEMORY_GROWTH=1" "-sEXIT_RUNTIME=1" "-O2")
