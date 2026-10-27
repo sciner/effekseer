@@ -1,0 +1,25 @@
+diff --git a/Dev/Cpp/Effekseer/Effekseer/Effekseer.EffectNode.h b/Dev/Cpp/Effekseer/Effekseer/Effekseer.EffectNode.h
+index 1fabe65..325ee2f 100644
+--- a/Dev/Cpp/Effekseer/Effekseer/Effekseer.EffectNode.h
++++ b/Dev/Cpp/Effekseer/Effekseer/Effekseer.EffectNode.h
+@@ -339,6 +339,20 @@ struct ParameterRendererCommon
+ 			}
+ 		}
+ 
++		// The nodes whose particles are simulated on the GPU are stored with -1 (unused) filters and wraps.
++		// They index the sampler tables of the renderers, out of range values fall back to the defaults.
++		for (size_t i = 0; i < TextureFilters.size(); i++)
++		{
++			if (TextureFilters[i] != TextureFilterType::Nearest && TextureFilters[i] != TextureFilterType::Linear)
++			{
++				TextureFilters[i] = TextureFilterType::Linear;
++			}
++			if (TextureWraps[i] != TextureWrapType::Repeat && TextureWraps[i] != TextureWrapType::Clamp && TextureWraps[i] != TextureWrapType::Mirror)
++			{
++				TextureWraps[i] = TextureWrapType::Repeat;
++			}
++		}
++
+ 		if (version >= 5)
+ 		{
+ 			int32_t zwrite, ztest = 0;

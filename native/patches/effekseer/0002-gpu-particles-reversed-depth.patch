@@ -1,0 +1,13 @@
+diff --git a/Dev/Cpp/EffekseerRendererCommon/EffekseerRendererCommon/EffekseerRenderer.GpuParticles.cpp b/Dev/Cpp/EffekseerRendererCommon/EffekseerRendererCommon/EffekseerRenderer.GpuParticles.cpp
+index 7d5867f..4c51db4 100644
+--- a/Dev/Cpp/EffekseerRendererCommon/EffekseerRendererCommon/EffekseerRenderer.GpuParticles.cpp
++++ b/Dev/Cpp/EffekseerRendererCommon/EffekseerRendererCommon/EffekseerRenderer.GpuParticles.cpp
+@@ -972,6 +972,8 @@ GpuParticles::PipelineStateRef GpuParticleSystem::GetOrCreatePipelineState(GpuPa
+ 
+ 	pipParams.IsDepthTestEnabled = key.ZTest > 0;
+ 	pipParams.IsDepthWriteEnabled = key.ZWrite > 0;
++	// the reversed depth of the renderer (near 1, far 0) compares the other way, as the sprites and models do
++	pipParams.DepthFunc = renderer_->GetImpl()->isDepthReversed ? DepthFuncType::Greater : DepthFuncType::Less;
+ 	pipParams.ShaderPtr = shaders_.RsParticleRender;
+ 	pipParams.VertexLayoutPtr = vertexLayout_;
+ 

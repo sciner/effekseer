@@ -1,0 +1,19 @@
+diff --git a/src/WebGPU/LLGI.PipelineStateWebGPU.cpp b/src/WebGPU/LLGI.PipelineStateWebGPU.cpp
+index 6d65e81..0df679b 100644
+--- a/src/WebGPU/LLGI.PipelineStateWebGPU.cpp
++++ b/src/WebGPU/LLGI.PipelineStateWebGPU.cpp
+@@ -170,9 +170,11 @@ bool PipelineStateWebGPU::HasBinding(uint32_t group, uint32_t binding, ShaderRes
+ 	for (const auto& b : bindings_)
+ 	{
+ 		const bool resourceTypeMatches = b.Resource.ResourceType == resourceType || b.Resource.ResourceType == ShaderResourceType::Unknown;
+-		const bool accessMatches = b.Resource.ResourceType == ShaderResourceType::Unknown ||
+-								   resourceType != ShaderResourceType::StorageBuffer ||
+-								   IsReadOnly(b.Resource.Access) == IsReadOnly(access);
++		// A bind group entry of a storage buffer has no access: the layout of the shader decides it. A buffer bound
++		// read-only to a read_write binding (the emit points of the GPU particles spawn shader) must still be bound,
++		// otherwise the bind group misses the entry and the whole command buffer is invalid.
++		(void)access;
++		const bool accessMatches = true;
+ 		if (b.Group == group && b.Binding == binding && resourceTypeMatches && accessMatches)
+ 		{
+ 			return true;
