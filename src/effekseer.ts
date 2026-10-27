@@ -64,6 +64,7 @@ function _onRuntimeInitialized() {
             ? Module.cwrap("EffekseerInit", "number", ["number", "number", "number", "number", "number", "number"])
             : Module.cwrap("EffekseerInit", "number", ["number", "number", "number"]),
         BeginFrame: _is_webgpu_runtime ? Module.cwrap("EffekseerBeginFrame", "number", ["number", "number", "number", "number", "number", "number", "number", "number"]) : null,
+        SetSoftDepth: _is_webgpu_runtime ? Module.cwrap("EffekseerSetSoftDepth", "number", ["number", "number", "number", "number", "number"]) : null,
         EndFrame: _is_webgpu_runtime ? Module.cwrap("EffekseerEndFrame", "void", ["number"]) : null,
         Terminate: Module.cwrap("EffekseerTerminate", "void", ["number"]),
         Update: Module.cwrap("EffekseerUpdate", "void", ["number", "number"]),
@@ -653,6 +654,8 @@ export class EffekseerContext {
     _webgpu: boolean = false
     _colorTexture: any = null
     _depthTexture: any = null
+    // the scene depth of the soft particles (WebGPU): a color texture (rgba16float) with the depth values
+    _softDepthTexture: any = null
     _colorFormat: number = 0
     _depthFormat: number = 0
     _samples: number = 1
@@ -713,13 +716,24 @@ export class EffekseerContext {
         this._samples = colorTexture.sampleCount ?? 1
     }
 
+    /**
+     * Sets the scene depth of the soft particles (WebGPU): a color GPUTexture (rgba16float, the depth value in r)
+     * with the values of the depth buffer of the scene, or null (no soft particles). The depth is reconstructed
+     * with the projection matrix of the draw
+     */
+    setSoftDepthTexture(texture: any) {
+        this._softDepthTexture = texture
+    }
+
     _beginFrameWebGPU(): boolean {
         const color = this._colorTexture
         if (!color) {
             return false
         }
         const depth = this._depthFormat > 0 ? this._depthTexture : null
-        Module.effekseerImportTextures = [color, depth]
+        const soft = this._softDepthTexture
+        Module.effekseerImportTextures = [color, depth, soft]
+        Core.SetSoftDepth(this.nativeptr, webgpuTextureId(soft), soft ? webgpuColorFormatCode(soft.format) : 0, soft?.width ?? 0, soft?.height ?? 0)
         const res = Core.BeginFrame(this.nativeptr, webgpuTextureId(color), this._colorFormat, webgpuTextureId(depth), this._depthFormat, color.width, color.height, this._samples)
         Module.effekseerImportTextures = null
         return !!res

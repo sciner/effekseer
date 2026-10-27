@@ -339,6 +339,12 @@ public:
 	LLGI::Texture* backgroundTexture_ = nullptr;
 	Effekseer::Backend::TextureRef backgroundTextureEfk_;
 
+	// the scene depth for the soft particles: a color copy of the depth buffer of the host (a depth
+	// texture can not be sampled as the float texture of the Effekseer shaders), imported by id
+	HostTextureWebGPU* softDepthTexture_ = nullptr;
+	Effekseer::Backend::TextureRef softDepthTextureEfk_;
+	int32_t softDepthTextureId_ = -1;
+
 	bool isDrawing_ = false;
 
 	void CalculateCameraDirectionAndPosition(const Effekseer::Matrix44& matrix, Effekseer::Vector3D& direction, Effekseer::Vector3D& position)
@@ -365,6 +371,52 @@ public:
 		ES_SAFE_RELEASE(depthTexture_);
 		colorTextureId_ = -1;
 		depthTextureId_ = -1;
+	}
+
+	void ReleaseSoftDepth()
+	{
+		if (renderer != nullptr)
+		{
+			renderer->SetDepth(nullptr, {});
+		}
+		softDepthTextureEfk_.Reset();
+		ES_SAFE_RELEASE(softDepthTexture_);
+		softDepthTextureId_ = -1;
+	}
+
+	// the scene depth of the soft particles (Module.effekseerImportTextures[2]); id < 0 - none.
+	// The depth is reconstructed with the projection matrix of the draw (scale 1, offset 0: the
+	// copy keeps the values of the depth buffer, a reversed projection keeps the reversed depth)
+	bool SetSoftDepth(int32_t id, int32_t format, int32_t width, int32_t height)
+	{
+		if (id < 0)
+		{
+			ReleaseSoftDepth();
+			return true;
+		}
+		if (softDepthTexture_ == nullptr || id != softDepthTextureId_ || softDepthTexture_->GetSizeAs2D().X != width ||
+			softDepthTexture_->GetSizeAs2D().Y != height)
+		{
+			ReleaseSoftDepth();
+			auto texture = wgpu::Texture::Acquire(effekseer_webgpu_import_texture(2));
+			softDepthTexture_ = new HostTextureWebGPU();
+			if (!softDepthTexture_->Initialize(device_, texture, ColorFormatFromCode(format), width, height, 1, false))
+			{
+				ReleaseSoftDepth();
+				return false;
+			}
+			softDepthTextureEfk_ = graphicsDevice_->CreateTexture(softDepthTexture_);
+			softDepthTextureId_ = id;
+		}
+		EffekseerRenderer::DepthReconstructionParameter param;
+		param.DepthBufferScale = 1.0f;
+		param.DepthBufferOffset = 0.0f;
+		param.ProjectionMatrix33 = projectionMatrix.Values[2][2];
+		param.ProjectionMatrix43 = projectionMatrix.Values[2][3];
+		param.ProjectionMatrix34 = projectionMatrix.Values[3][2];
+		param.ProjectionMatrix44 = projectionMatrix.Values[3][3];
+		renderer->SetDepth(softDepthTextureEfk_, param);
+		return true;
 	}
 
 	void ReleaseBackground()
@@ -533,6 +585,7 @@ public:
 		}
 
 		ReleaseBackground();
+		ReleaseSoftDepth();
 		ReleaseRenderTargets();
 
 		manager.Reset();
@@ -732,6 +785,11 @@ extern "C"
 	}
 
 	void EXPORT EffekseerEndFrame(EfkWebViewer::Context* context) { context->EndFrame(); }
+
+	int EXPORT EffekseerSetSoftDepth(EfkWebViewer::Context* context, int id, int format, int width, int height)
+	{
+		return context->SetSoftDepth(id, format, width, height) ? 1 : 0;
+	}
 
 	void EXPORT EffekseerDraw(EfkWebViewer::Context* context) { context->Draw(); }
 

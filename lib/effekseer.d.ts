@@ -48,6 +48,11 @@ declare class ContextStates {
     current_ibo: any;
     current_textures: any[];
     current_active_texture_id: any;
+    isWebGL2: boolean;
+    current_samplers: any[];
+    current_textures_array: any[];
+    current_textures_3d: any[];
+    current_program: any;
     constructor(gl: any);
     release(): void;
     save(): void;
@@ -69,6 +74,7 @@ export declare class EffekseerContext {
     _webgpu: boolean;
     _colorTexture: any;
     _depthTexture: any;
+    _softDepthTexture: any;
     _colorFormat: number;
     _depthFormat: number;
     _samples: number;
@@ -93,6 +99,12 @@ export declare class EffekseerContext {
      * @param depthTexture GPUTexture of the depth with RENDER_ATTACHMENT, null without the depth test
      */
     setRenderTargets(colorTexture: any, depthTexture?: any): void;
+    /**
+     * Sets the scene depth of the soft particles (WebGPU): a color GPUTexture (rgba16float, the depth value in r)
+     * with the values of the depth buffer of the scene, or null (no soft particles). The depth is reconstructed
+     * with the projection matrix of the draw
+     */
+    setSoftDepthTexture(texture: any): void;
     _beginFrameWebGPU(): boolean;
     init(webglContext: WebGLRenderingContext, settings?: {
         instanceMaxCount?: number;
